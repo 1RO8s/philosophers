@@ -3,7 +3,7 @@
 CC		:= cc
 CFLAGS	:= -Wall -Wextra -Werror
 NAME	:= philo
-SRCS	:= srcs/main.c
+SRCS	:= srcs/main.c srcs/print.c
 OBJS	:= $(SRCS:.c=.o)
 SRCS_DIR	:= srcs
 INC := -Iincludes

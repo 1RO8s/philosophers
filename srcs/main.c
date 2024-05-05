@@ -6,66 +6,84 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/05/06 00:44:07 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/05/06 05:17:00 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-long	get_timestamp(t_timeval *start)
+long	us2ms(long usec)
+{
+	return (usec / 1000);
+}
+
+long	get_elapsed_time(t_timeval start)
 {
 	t_timeval	current;
 	long		sec;
-	long		ms;
+	long		usec;
 	long		timestamp;
 
 	gettimeofday(&current, NULL);
-	sec = current.tv_sec - start->tv_sec;
-	ms = current.tv_usec - start->tv_usec;
-	if (ms < 0)
+	sec = current.tv_sec - start.tv_sec;
+	usec = current.tv_usec - start.tv_usec;
+	if (usec < 0)
 	{
 		sec--;
-		ms += 1000000;
+		usec += 1000000;
 	}
-	timestamp = sec * 1000000 + ms;
+	timestamp = sec * 1000000 + usec;
 	return (timestamp);
 }
 
-void	print_config(t_config *config)
+t_timeval	us2timeval(long usec)
 {
-	printf("--- print_config ---\n");
-	printf("num_of_philo: %zu\n", config->num_of_philo);
-	printf("time_to_die: %zu\n", config->time_to_die);
-	printf("time_to_eat: %zu\n", config->time_to_eat);
-	printf("time_to_sleep: %zu\n", config->time_to_sleep);
-	printf("required_eat_count: %zu\n", config->required_eat_count);
-	printf("timestamp: %ld ms\n", get_timestamp(&config->start));
-	printf("\n");
+	struct timeval	time;
+
+	time.tv_sec = usec / 1000000;
+	time.tv_usec = usec % 1000000;
+	return (time);
 }
+
+
 
 void	*handle_philo_actions(void *args)
 {
 	t_philo	*data;
 
 	data = (t_philo *)args;
-	printf("%ld philos[%d] is actitvated: left->%p right->%p:\n", get_timestamp(&data->config->start), data->id,
-		data->left_fork, data->right_fork);
+	data->last_eat_time = get_elapsed_time(data->config->start);
+	// printf("%ldms %d is actitvated\n",
+	// 	us2ms(get_elapsed_time(data->config->start)), data->id);
 	while (1)
 	{
-		// フォークを取る
+		// フォークが空くのを待つ
 		pthread_mutex_lock(data->left_fork);
 		pthread_mutex_lock(data->right_fork);
-		printf("%ld\t%d is eating\n", get_timestamp(&data->config->start), data->id);
+		// 両手にフォークを持ったら食事を開始
+		printf("%ld\t%d is eating\n",
+			us2ms(get_elapsed_time(data->config->start)), data->id);
 		usleep(data->config->time_to_eat * 1000);
 		pthread_mutex_unlock(data->left_fork);
 		pthread_mutex_unlock(data->right_fork);
-		break ;
-		// 両手にフォークを持ったら食事を開始
 		// 食事が終わったらフォークを置いて睡眠
+		data->last_eat_time = get_elapsed_time(us2timeval(data->last_eat_time));
+		printf("%ld\t%d is sleeping\n",
+			us2ms(get_elapsed_time(data->config->start)), data->id);
+		usleep(data->config->time_to_sleep * 1000);
+		// 睡眠が終わったら思考して次の食事を待つ
+		printf("%ld\t%d is thinking\n",
+			us2ms(get_elapsed_time(data->config->start)), data->id);
+		// if (data->config->required_eat_count != -1)
+		// {
+		// 	data->eat_count++;
+		// 	if (data->eat_count >= data->config->required_eat_count)
+		// 		break ;
+		// }
+		break ;
 	}
 	return (NULL);
 }
@@ -87,19 +105,7 @@ t_config	*init_config(int argc, char **argv, t_config *config)
 	return (config);
 }
 
-void	print_forks(pthread_mutex_t **forks)
-{
-	int	i;
 
-	i = 0;
-	printf("--- print_forks ---\n");
-	while (forks[i] != NULL && i < 10)
-	{
-		printf("forks[%d]: %p\n", i, forks[i]);
-		i++;
-	}
-	printf("\n");
-}
 
 pthread_mutex_t	**init_forks(size_t num_of_philo)
 {
@@ -158,6 +164,8 @@ void	wait_for_threads(pthread_t *pthreads, size_t num_of_philo)
 	}
 }
 
+
+
 int	main(int argc, char **argv)
 {
 	pthread_t		*pthreads;
@@ -178,9 +186,10 @@ int	main(int argc, char **argv)
 		data[i].left_fork = forks[i];
 		data[i].right_fork = forks[(i + 1) % conf.num_of_philo];
 		data[i].eat_count = 0;
-		data[i].last_eat = 0;
+		data[i].last_eat_time = 0;
 		data[i].config = &conf;
 	}
+	print_philos_forks(data, conf.num_of_philo);
 	// start threads
 	for (size_t i = 0; i < conf.num_of_philo; i++)
 	{
