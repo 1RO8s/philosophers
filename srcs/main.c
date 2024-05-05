@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/05/05 23:20:33 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/05/06 00:44:07 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,25 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+long	get_timestamp(t_timeval *start)
+{
+	t_timeval	current;
+	long		sec;
+	long		ms;
+	long		timestamp;
+
+	gettimeofday(&current, NULL);
+	sec = current.tv_sec - start->tv_sec;
+	ms = current.tv_usec - start->tv_usec;
+	if (ms < 0)
+	{
+		sec--;
+		ms += 1000000;
+	}
+	timestamp = sec * 1000000 + ms;
+	return (timestamp);
+}
+
 void	print_config(t_config *config)
 {
 	printf("--- print_config ---\n");
@@ -24,6 +43,7 @@ void	print_config(t_config *config)
 	printf("time_to_eat: %zu\n", config->time_to_eat);
 	printf("time_to_sleep: %zu\n", config->time_to_sleep);
 	printf("required_eat_count: %zu\n", config->required_eat_count);
+	printf("timestamp: %ld ms\n", get_timestamp(&config->start));
 	printf("\n");
 }
 
@@ -32,18 +52,18 @@ void	*handle_philo_actions(void *args)
 	t_philo	*data;
 
 	data = (t_philo *)args;
-	// printf("philos[%d] is actitvated: left->%p right->%p:\n", data->id,
-	// 	data->left_fork, data->right_fork);
+	printf("%ld philos[%d] is actitvated: left->%p right->%p:\n", get_timestamp(&data->config->start), data->id,
+		data->left_fork, data->right_fork);
 	while (1)
 	{
 		// フォークを取る
 		pthread_mutex_lock(data->left_fork);
 		pthread_mutex_lock(data->right_fork);
-		printf("philos[%d] is eating\n", data->id);
+		printf("%ld\t%d is eating\n", get_timestamp(&data->config->start), data->id);
 		usleep(data->config->time_to_eat * 1000);
 		pthread_mutex_unlock(data->left_fork);
 		pthread_mutex_unlock(data->right_fork);
-		break;
+		break ;
 		// 両手にフォークを持ったら食事を開始
 		// 食事が終わったらフォークを置いて睡眠
 	}
@@ -62,6 +82,7 @@ t_config	*init_config(int argc, char **argv, t_config *config)
 		config->required_eat_count = -1;
 	// config->forks = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t)
 	// 		* config->num_of_philo);
+	gettimeofday(&config->start, NULL);
 	print_config(config);
 	return (config);
 }
