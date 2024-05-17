@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/05/06 05:17:00 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/05/18 06:43:05 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,25 +20,6 @@ long	us2ms(long usec)
 	return (usec / 1000);
 }
 
-long	get_elapsed_time(t_timeval start)
-{
-	t_timeval	current;
-	long		sec;
-	long		usec;
-	long		timestamp;
-
-	gettimeofday(&current, NULL);
-	sec = current.tv_sec - start.tv_sec;
-	usec = current.tv_usec - start.tv_usec;
-	if (usec < 0)
-	{
-		sec--;
-		usec += 1000000;
-	}
-	timestamp = sec * 1000000 + usec;
-	return (timestamp);
-}
-
 t_timeval	us2timeval(long usec)
 {
 	struct timeval	time;
@@ -48,42 +29,148 @@ t_timeval	us2timeval(long usec)
 	return (time);
 }
 
+long	get_elapsed_usec(t_timeval start)
+{
+	t_timeval	current;
+	long		elapsed_sec;
+	long		elapsed_usec;
 
+	gettimeofday(&current, NULL);
+	elapsed_sec = current.tv_sec - start.tv_sec;
+	elapsed_usec = current.tv_usec - start.tv_usec;
+	if (elapsed_usec < 0)
+	{
+		elapsed_sec--;
+		elapsed_usec += 1000000;
+	}
+	elapsed_usec = elapsed_sec * 1000000 + elapsed_usec;
+	return (elapsed_usec);
+}
+
+int	all_philos_eat_enough(t_config *config)
+{
+	size_t	i;
+	size_t	num_of_philo;
+	t_philo	*philos;
+
+	philos = config->philos;
+	// printf("-----  all_philos_eat_enough -----\n");
+	num_of_philo = config->num_of_philo;
+	i = 0;
+	while (i < num_of_philo)
+	{
+		// printf("eat_count[%zu]: %zu, ", i, config->eat_count[i]);
+		// if (config->eat_count[i] < config->required_eat_count)
+		if (philos[i].eat_count < config->required_eat_count)
+			return (0);
+		i++;
+	}
+	// printf("\n");
+	// printf("All philosophers have eaten enough\n");
+	return (1);
+}
+
+void	mutex_print(t_philo *philo, t_status status)
+{
+	pthread_mutex_lock(philo->config->print_mutex);
+	if (status == DEAD)
+		printf("%ld\t%d died\n", us2ms(get_elapsed_usec(philo->config->start)),
+			philo->id);
+	else if (status == EATING)
+		printf("%ld\t%d is eating\n",
+			us2ms(get_elapsed_usec(philo->config->start)), philo->id);
+	else if (status == SLEEPING)
+		printf("%ld\t%d is sleeping\n",
+			us2ms(get_elapsed_usec(philo->config->start)), philo->id);
+	else if (status == THINKING)
+		printf("%ld\t%d is thinking\n",
+			us2ms(get_elapsed_usec(philo->config->start)), philo->id);
+	pthread_mutex_unlock(philo->config->print_mutex);
+}
+
+/**
+ * @brief Checks if a philosopher has died.
+ * @param philo A pointer to the philosopher structure.
+ * @return 1 if the philosopher has died, 0 otherwise.
+ */
+int	philo_is_dead(t_philo *philo)
+{
+	t_timeval	last_eat_time;
+	size_t		time_to_die;
+
+	last_eat_time = philo->last_eat_timeval;
+	time_to_die = philo->config->time_to_die;
+	// printf("	since philo[%d] have eat: %ld\n", philo->id,
+	// 		get_elapsed_usec(last_eat_time)/1000);
+	if (get_elapsed_usec(last_eat_time) > (long)time_to_die * 1000)
+	{
+		// printf("%ld\t%d died\n",
+		// us2ms(get_elapsed_usec(philo->config->start)),
+		// 	philo->id);
+		mutex_print(philo, DEAD);
+		philo->config->is_anyone_dead = 1;
+		return (1);
+	}
+	return (0);
+}
+
+int	eat(t_philo *philo)
+{
+	pthread_mutex_lock(philo->left_fork);
+	pthread_mutex_lock(philo->right_fork);
+	// 食事前に死んでいないか確認
+	if (philo_is_dead(philo))
+		philo->config->is_anyone_dead = 1;
+	if (all_philos_eat_enough(philo->config) || philo->config->is_anyone_dead)
+		return (1);
+	mutex_print(philo, EATING);
+	usleep(philo->config->time_to_eat * 1000);
+	pthread_mutex_unlock(philo->right_fork);
+	pthread_mutex_unlock(philo->left_fork);
+	// 食事後に死んでいないか確認
+	if (philo_is_dead(philo))
+		philo->config->is_anyone_dead = 1;
+	if (all_philos_eat_enough(philo->config) || philo->config->is_anyone_dead)
+		return (1);
+	philo->eat_count++;
+	gettimeofday(&philo->last_eat_timeval, NULL);
+	return (0);
+}
 
 void	*handle_philo_actions(void *args)
 {
-	t_philo	*data;
+	t_philo		*philo;
+	t_config	*config;
+	size_t		i;
 
-	data = (t_philo *)args;
-	data->last_eat_time = get_elapsed_time(data->config->start);
-	// printf("%ldms %d is actitvated\n",
-	// 	us2ms(get_elapsed_time(data->config->start)), data->id);
-	while (1)
+	philo = (t_philo *)args;
+	config = philo->config;
+	// config->last_eat_time[philo->id] = get_elapsed_usec(config->start);
+	gettimeofday(&philo->last_eat_timeval, NULL);
+	i = 0;
+	while (1 || i < 1)
 	{
-		// フォークが空くのを待つ
-		pthread_mutex_lock(data->left_fork);
-		pthread_mutex_lock(data->right_fork);
-		// 両手にフォークを持ったら食事を開始
-		printf("%ld\t%d is eating\n",
-			us2ms(get_elapsed_time(data->config->start)), data->id);
-		usleep(data->config->time_to_eat * 1000);
-		pthread_mutex_unlock(data->left_fork);
-		pthread_mutex_unlock(data->right_fork);
-		// 食事が終わったらフォークを置いて睡眠
-		data->last_eat_time = get_elapsed_time(us2timeval(data->last_eat_time));
-		printf("%ld\t%d is sleeping\n",
-			us2ms(get_elapsed_time(data->config->start)), data->id);
-		usleep(data->config->time_to_sleep * 1000);
-		// 睡眠が終わったら思考して次の食事を待つ
-		printf("%ld\t%d is thinking\n",
-			us2ms(get_elapsed_time(data->config->start)), data->id);
-		// if (data->config->required_eat_count != -1)
-		// {
-		// 	data->eat_count++;
-		// 	if (data->eat_count >= data->config->required_eat_count)
-		// 		break ;
-		// }
-		break ;
+		// 食事
+		if (eat(philo))
+			break ;
+		// config->eat_count[philo->id]++;
+		// config->last_eat_time[philo->id] = get_elapsed_usec(us2timeval(config->last_eat_time[philo->id]));
+		// 睡眠
+		if (philo_is_dead(philo))
+			config->is_anyone_dead = 1;
+		if (all_philos_eat_enough(config) || config->is_anyone_dead)
+			break ;
+		// philo->eat_count++;
+		// gettimeofday(&philo->last_eat_timeval, NULL);
+		mutex_print(philo, SLEEPING);
+		usleep(philo->config->time_to_sleep * 1000);
+		// 思考して次の食事を待つ
+		if (philo_is_dead(philo))
+			config->is_anyone_dead = 1;
+		if (all_philos_eat_enough(config) || config->is_anyone_dead)
+			break ;
+		mutex_print(philo, THINKING);
+		i++;
 	}
 	return (NULL);
 }
@@ -101,11 +188,14 @@ t_config	*init_config(int argc, char **argv, t_config *config)
 	// config->forks = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t)
 	// 		* config->num_of_philo);
 	gettimeofday(&config->start, NULL);
+	config->is_anyone_dead = 0;
+	// config->eat_count = (size_t *)malloc(sizeof(int) * config->num_of_philo);
+	// config->last_eat_time = (long *)malloc(sizeof(long)
+	// * config->num_of_philo);
+	config->print_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
 	print_config(config);
 	return (config);
 }
-
-
 
 pthread_mutex_t	**init_forks(size_t num_of_philo)
 {
@@ -119,7 +209,7 @@ pthread_mutex_t	**init_forks(size_t num_of_philo)
 	{
 		forks[i] = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
 		if (forks[i] == NULL || pthread_mutex_init(forks[i], NULL) != 0)
-			perror("Failed to initialize mutex");
+			printf("Error: Failed to initialize mutex\n");
 		i++;
 	}
 	forks[i] = (pthread_mutex_t *)NULL;
@@ -159,12 +249,25 @@ void	wait_for_threads(pthread_t *pthreads, size_t num_of_philo)
 	i = 0;
 	while (i < num_of_philo)
 	{
-		pthread_join(pthreads[i], NULL);
+		if (pthread_join(pthreads[i], NULL) != 0)
+			printf("Error: Failed to join thread\n");
 		i++;
 	}
 }
 
+void	start_threads(pthread_t *pthreads, t_philo *data, size_t num_of_philo)
+{
+	size_t	i;
 
+	i = 0;
+	while (i < num_of_philo)
+	{
+		if (pthread_create(&pthreads[i], NULL, &handle_philo_actions,
+				&data[i]) != 0)
+			perror("Failed to create thread");
+		i++;
+	}
+}
 
 int	main(int argc, char **argv)
 {
@@ -172,31 +275,42 @@ int	main(int argc, char **argv)
 	t_config		conf;
 	t_philo			*data;
 	pthread_mutex_t	**forks;
+	size_t			i;
 
 	if (is_invalid_argument(argc, argv))
 		return (1);
 	// initialize
 	init_config(argc, argv, &conf);
 	forks = init_forks(conf.num_of_philo);
-	pthreads = (pthread_t *)malloc(sizeof(pthread_t) * conf.num_of_philo);
 	data = (t_philo *)malloc(sizeof(t_philo) * conf.num_of_philo);
-	for (size_t i = 0; i < conf.num_of_philo; i++)
+	i = 0;
+	while (i < conf.num_of_philo)
 	{
 		data[i].id = i;
 		data[i].left_fork = forks[i];
 		data[i].right_fork = forks[(i + 1) % conf.num_of_philo];
 		data[i].eat_count = 0;
-		data[i].last_eat_time = 0;
+		// conf.eat_count[i] = 0;
+		// conf.last_eat_time[i] = 0;
+		// data[i].last_eat_time = 0;
+		data[i].last_eat_timeval = conf.start;
 		data[i].config = &conf;
+		i++;
 	}
+	conf.philos = data;
 	print_philos_forks(data, conf.num_of_philo);
 	// start threads
-	for (size_t i = 0; i < conf.num_of_philo; i++)
-	{
-		if (pthread_create(&pthreads[i], NULL, &handle_philo_actions,
-				&data[i]) != 0)
-			perror("Failed to create thread");
-	}
+	pthreads = (pthread_t *)malloc(sizeof(pthread_t) * conf.num_of_philo);
+	start_threads(pthreads, data, conf.num_of_philo);
+	// while (1)
+	// {
+	// 	// check if all philosophers have eaten enough or died
+	// 	// if (all_philos_eat_enough(&conf) || conf.is_anyone_dead)
+	// 	// 	break ;
+	// 	// usleep(1000 * 1000);
+	// 	// if (check_philos_eat_count(data, conf.num_of_philo))
+	// 		break ;
+	// }
 	wait_for_threads(pthreads, conf.num_of_philo);
 	printf("complete\n");
 	return (0);
