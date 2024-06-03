@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/05/18 06:43:05 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/05/24 12:39:45 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,37 +100,37 @@ int	philo_is_dead(t_philo *philo)
 
 	last_eat_time = philo->last_eat_timeval;
 	time_to_die = philo->config->time_to_die;
-	// printf("	since philo[%d] have eat: %ld\n", philo->id,
-	// 		get_elapsed_usec(last_eat_time)/1000);
 	if (get_elapsed_usec(last_eat_time) > (long)time_to_die * 1000)
+		return (1);
+	return (0);
+}
+
+int	should_stop(t_philo *philo)
+{
+	if (all_philos_eat_enough(philo->config) || philo->config->is_anyone_dead)
+		return (1);
+	if (philo_is_dead(philo))
 	{
-		// printf("%ld\t%d died\n",
-		// us2ms(get_elapsed_usec(philo->config->start)),
-		// 	philo->id);
-		mutex_print(philo, DEAD);
 		philo->config->is_anyone_dead = 1;
+		mutex_print(philo, DEAD);
 		return (1);
 	}
 	return (0);
 }
-
+//
 int	eat(t_philo *philo)
 {
 	pthread_mutex_lock(philo->left_fork);
 	pthread_mutex_lock(philo->right_fork);
 	// 食事前に死んでいないか確認
-	if (philo_is_dead(philo))
-		philo->config->is_anyone_dead = 1;
-	if (all_philos_eat_enough(philo->config) || philo->config->is_anyone_dead)
+	if (should_stop(philo))
 		return (1);
 	mutex_print(philo, EATING);
 	usleep(philo->config->time_to_eat * 1000);
 	pthread_mutex_unlock(philo->right_fork);
 	pthread_mutex_unlock(philo->left_fork);
 	// 食事後に死んでいないか確認
-	if (philo_is_dead(philo))
-		philo->config->is_anyone_dead = 1;
-	if (all_philos_eat_enough(philo->config) || philo->config->is_anyone_dead)
+	if (should_stop(philo))
 		return (1);
 	philo->eat_count++;
 	gettimeofday(&philo->last_eat_timeval, NULL);
@@ -185,35 +185,48 @@ t_config	*init_config(int argc, char **argv, t_config *config)
 		config->required_eat_count = atoi(argv[5]);
 	else
 		config->required_eat_count = -1;
-	// config->forks = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t)
-	// 		* config->num_of_philo);
 	gettimeofday(&config->start, NULL);
 	config->is_anyone_dead = 0;
-	// config->eat_count = (size_t *)malloc(sizeof(int) * config->num_of_philo);
-	// config->last_eat_time = (long *)malloc(sizeof(long)
-	// * config->num_of_philo);
 	config->print_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+	pthread_mutex_init(config->print_mutex, NULL);
 	print_config(config);
 	return (config);
 }
 
-pthread_mutex_t	**init_forks(size_t num_of_philo)
+pthread_mutex_t	**init_forks(size_t num)
 {
 	pthread_mutex_t	**forks;
 	size_t			i;
 
-	forks = (pthread_mutex_t **)malloc(sizeof(pthread_mutex_t *) * (num_of_philo
-				+ 1));
-	i = 0;
-	while (i < num_of_philo)
+	forks = (pthread_mutex_t **)malloc(sizeof(pthread_mutex_t *) * (num + 1));
+	if (forks == NULL)
+	{
+		printf("Error: Failed to allocate memory for forks array\n");
+		return (NULL);
+	}
+	for (i = 0; i < num; i++)
 	{
 		forks[i] = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
-		if (forks[i] == NULL || pthread_mutex_init(forks[i], NULL) != 0)
+		if (forks[i] == NULL)
+		{
+			printf("Error: Failed to allocate memory for mutex\n");
+			while (i > 0)
+				free(forks[--i]);
+			free(forks);
+			return (NULL);
+		}
+		if (pthread_mutex_init(forks[i], NULL) != 0)
+		{
 			printf("Error: Failed to initialize mutex\n");
-		i++;
+			while (i > 0)
+				pthread_mutex_destroy(forks[--i]);
+				free(forks[i]);
+			free(forks);
+			return (NULL);
+		}
 	}
-	forks[i] = (pthread_mutex_t *)NULL;
-	print_forks(forks);
+	free(forks[num]);
+	forks[num] = NULL;
 	return (forks);
 }
 
@@ -269,49 +282,78 @@ void	start_threads(pthread_t *pthreads, t_philo *data, size_t num_of_philo)
 	}
 }
 
+void	init_philos(t_philo *philos, t_config *config)
+{
+	size_t	i;
+
+	i = 0;
+	while (i < config->num_of_philo)
+	{
+		philos[i].id = i;
+		philos[i].left_fork = config->forks[i];
+		philos[i].right_fork = config->forks[(i + 1) % config->num_of_philo];
+		philos[i].eat_count = 0;
+		philos[i].last_eat_timeval = config->start;
+		philos[i].config = config;
+		i++;
+	}
+}
+
+pthread_mutex_t	**free_forks(pthread_mutex_t **forks)
+{
+	size_t	i;
+
+	i = 0;
+	while (forks[i] != NULL)
+	{
+		pthread_mutex_destroy(forks[i]);
+		free(forks[i]);
+		i++;
+	}
+	// pthread_mutex_destroy(forks[i]);
+	// free(forks[i]);
+	free(forks);
+	return (NULL);
+}
+
+// void free_forks(pthread_mutex_t **forks)
+// {
+//     size_t i = 0;
+
+//     while (forks[i] != NULL) {
+//         pthread_mutex_destroy(forks[i]);
+//         free(forks[i]);
+//         i++;
+//     }
+//     free(forks);
+// }
+
 int	main(int argc, char **argv)
 {
 	pthread_t		*pthreads;
 	t_config		conf;
-	t_philo			*data;
+	t_philo			*philos;
 	pthread_mutex_t	**forks;
-	size_t			i;
 
 	if (is_invalid_argument(argc, argv))
-		return (1);
+		return (EXIT_FAILURE);
 	// initialize
 	init_config(argc, argv, &conf);
 	forks = init_forks(conf.num_of_philo);
-	data = (t_philo *)malloc(sizeof(t_philo) * conf.num_of_philo);
-	i = 0;
-	while (i < conf.num_of_philo)
-	{
-		data[i].id = i;
-		data[i].left_fork = forks[i];
-		data[i].right_fork = forks[(i + 1) % conf.num_of_philo];
-		data[i].eat_count = 0;
-		// conf.eat_count[i] = 0;
-		// conf.last_eat_time[i] = 0;
-		// data[i].last_eat_time = 0;
-		data[i].last_eat_timeval = conf.start;
-		data[i].config = &conf;
-		i++;
-	}
-	conf.philos = data;
-	print_philos_forks(data, conf.num_of_philo);
+	conf.forks = forks;
+	philos = (t_philo *)malloc(sizeof(t_philo) * conf.num_of_philo);
+	init_philos(philos, &conf);
+	conf.philos = philos;
+	print_philos_forks(philos, conf.num_of_philo);
 	// start threads
 	pthreads = (pthread_t *)malloc(sizeof(pthread_t) * conf.num_of_philo);
-	start_threads(pthreads, data, conf.num_of_philo);
-	// while (1)
-	// {
-	// 	// check if all philosophers have eaten enough or died
-	// 	// if (all_philos_eat_enough(&conf) || conf.is_anyone_dead)
-	// 	// 	break ;
-	// 	// usleep(1000 * 1000);
-	// 	// if (check_philos_eat_count(data, conf.num_of_philo))
-	// 		break ;
-	// }
+	start_threads(pthreads, philos, conf.num_of_philo);
+	// wait for threads
 	wait_for_threads(pthreads, conf.num_of_philo);
+	// free
+	free(pthreads);
+	free(philos);
+	forks = free_forks(forks);
 	printf("complete\n");
 	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:22:03 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/05/18 05:56:04 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/05/20 06:52:18 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ typedef struct s_config
 	size_t				time_to_eat;
 	size_t				time_to_sleep;
 	size_t				required_eat_count;
+	pthread_mutex_t		**forks;
 	t_timeval			start;
 	int					is_anyone_dead;
 	// size_t				*eat_count;
