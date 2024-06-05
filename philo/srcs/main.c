@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/05/24 12:39:45 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/05 15:22:15 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,13 @@ int	all_philos_eat_enough(t_config *config)
 	return (1);
 }
 
+void	mutex_message(t_config *config, char *message)
+{
+	pthread_mutex_lock(config->print_mutex);
+	printf("%s", message);
+	pthread_mutex_unlock(config->print_mutex);
+}
+
 void	mutex_print(t_philo *philo, t_status status)
 {
 	pthread_mutex_lock(philo->config->print_mutex);
@@ -117,14 +124,29 @@ int	should_stop(t_philo *philo)
 	}
 	return (0);
 }
+
+void	waiting_for_forks(pthread_mutex_t *fork1, pthread_mutex_t *fork2)
+{
+	if (pthread_mutex_lock(fork1) != 0)
+		printf("Error: Failed to lock mutex\n");
+	if (pthread_mutex_lock(fork2) != 0)
+	{
+		pthread_mutex_unlock(fork1);
+		printf("Error: Failed to lock mutex\n");
+	}
+}
+
 //
 int	eat(t_philo *philo)
 {
-	pthread_mutex_lock(philo->left_fork);
-	pthread_mutex_lock(philo->right_fork);
+	waiting_for_forks(philo->left_fork, philo->right_fork);
 	// 食事前に死んでいないか確認
 	if (should_stop(philo))
+	{
+		pthread_mutex_unlock(philo->right_fork);
+		pthread_mutex_unlock(philo->left_fork);
 		return (1);
+	}
 	mutex_print(philo, EATING);
 	usleep(philo->config->time_to_eat * 1000);
 	pthread_mutex_unlock(philo->right_fork);
@@ -209,6 +231,7 @@ pthread_mutex_t	**init_forks(size_t num)
 		forks[i] = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
 		if (forks[i] == NULL)
 		{
+			// Free memories if it fails to allocate memory
 			printf("Error: Failed to allocate memory for mutex\n");
 			while (i > 0)
 				free(forks[--i]);
@@ -217,10 +240,13 @@ pthread_mutex_t	**init_forks(size_t num)
 		}
 		if (pthread_mutex_init(forks[i], NULL) != 0)
 		{
+			// Free memories if it fails to initialize mutex
 			printf("Error: Failed to initialize mutex\n");
 			while (i > 0)
-				pthread_mutex_destroy(forks[--i]);
+			{
+				pthread_mutex_destroy(forks--[i]);
 				free(forks[i]);
+			}
 			free(forks);
 			return (NULL);
 		}
@@ -310,23 +336,9 @@ pthread_mutex_t	**free_forks(pthread_mutex_t **forks)
 		free(forks[i]);
 		i++;
 	}
-	// pthread_mutex_destroy(forks[i]);
-	// free(forks[i]);
 	free(forks);
 	return (NULL);
 }
-
-// void free_forks(pthread_mutex_t **forks)
-// {
-//     size_t i = 0;
-
-//     while (forks[i] != NULL) {
-//         pthread_mutex_destroy(forks[i]);
-//         free(forks[i]);
-//         i++;
-//     }
-//     free(forks);
-// }
 
 int	main(int argc, char **argv)
 {
