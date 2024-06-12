@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:22:03 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/05/20 06:52:18 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/12 20:55:46 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,8 @@ typedef enum e_status
 	DEAD,
 	EATING,
 	SLEEPING,
-	THINKING
+	THINKING,
+	TEST
 }						t_status;
 
 long					get_elapsed_usec(t_timeval start);

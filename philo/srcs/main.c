@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/05 15:22:15 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/12 22:44:41 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,8 @@
 
 long	us2ms(long usec)
 {
-	return (usec / 1000);
+	return usec;
+	// return (usec / 1000);
 }
 
 t_timeval	us2timeval(long usec)
@@ -32,19 +33,21 @@ t_timeval	us2timeval(long usec)
 long	get_elapsed_usec(t_timeval start)
 {
 	t_timeval	current;
-	long		elapsed_sec;
-	long		elapsed_usec;
+	// long		elapsed_sec;
+	// long		elapsed_usec;
 
 	gettimeofday(&current, NULL);
-	elapsed_sec = current.tv_sec - start.tv_sec;
-	elapsed_usec = current.tv_usec - start.tv_usec;
-	if (elapsed_usec < 0)
-	{
-		elapsed_sec--;
-		elapsed_usec += 1000000;
-	}
-	elapsed_usec = elapsed_sec * 1000000 + elapsed_usec;
-	return (elapsed_usec);
+	return ((current.tv_sec * 1000) + (current.tv_usec / 1000) - (start.tv_sec * 1000) - (start.tv_usec / 1000));
+
+	// elapsed_sec = current.tv_sec - start.tv_sec;
+	// elapsed_usec = current.tv_usec - start.tv_usec;
+	// if (elapsed_usec < 0)
+	// {
+	// 	elapsed_sec--;
+	// 	elapsed_usec += 1000000;
+	// }
+	// elapsed_usec = elapsed_sec * 1000000 + elapsed_usec;
+	// return (elapsed_usec);
 }
 
 int	all_philos_eat_enough(t_config *config)
@@ -92,6 +95,9 @@ void	mutex_print(t_philo *philo, t_status status)
 	else if (status == THINKING)
 		printf("%ld\t%d is thinking\n",
 			us2ms(get_elapsed_usec(philo->config->start)), philo->id);
+	else if (status == TEST)
+		printf("%ld\t%d test\n",
+			us2ms(get_elapsed_usec(philo->config->start)), philo->id);
 	pthread_mutex_unlock(philo->config->print_mutex);
 }
 
@@ -107,13 +113,15 @@ int	philo_is_dead(t_philo *philo)
 
 	last_eat_time = philo->last_eat_timeval;
 	time_to_die = philo->config->time_to_die;
-	if (get_elapsed_usec(last_eat_time) > (long)time_to_die * 1000)
+	printf("# %d last_eat_time: %ld\n", philo->id, get_elapsed_usec(last_eat_time));
+	if (get_elapsed_usec(last_eat_time) >= (long)time_to_die * 1000)
 		return (1);
 	return (0);
 }
 
 int	should_stop(t_philo *philo)
 {
+	mutex_print(philo, TEST);
 	if (all_philos_eat_enough(philo->config) || philo->config->is_anyone_dead)
 		return (1);
 	if (philo_is_dead(philo))
@@ -148,7 +156,10 @@ int	eat(t_philo *philo)
 		return (1);
 	}
 	mutex_print(philo, EATING);
+	// mutex_print(philo, TEST);
 	usleep(philo->config->time_to_eat * 1000);
+	// printf("%ld\t%d [test]\n", us2ms(get_elapsed_usec(philo->config->start)), philo->id);
+	// mutex_print(philo, TEST);
 	pthread_mutex_unlock(philo->right_fork);
 	pthread_mutex_unlock(philo->left_fork);
 	// 食事後に死んでいないか確認
