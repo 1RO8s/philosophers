@@ -1,3 +1,11 @@
-philo
-.vscode
 *.o
+philo/philo
+.vscode
+
+# local files
+/sample
+cmd.sh
+
+# tester repositories
+/LazyPhilosophersTester
+/Philosphers-42Project-Tester

@@ -38,3 +38,4 @@ jobs:
           path_filters: |
             !dist/**
             !**/*.lock
+            !**/*.lock
