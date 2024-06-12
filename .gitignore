@@ -1,5 +1,6 @@
-.vscode
 *.o
+philo/philo
+.vscode
 
 # local files
 /sample
