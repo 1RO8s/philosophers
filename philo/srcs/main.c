@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/12 22:44:41 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/16 04:25:17 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 
 long	us2ms(long usec)
 {
-	return usec;
+	return (usec);
 	// return (usec / 1000);
 }
 
@@ -33,12 +33,12 @@ t_timeval	us2timeval(long usec)
 long	get_elapsed_usec(t_timeval start)
 {
 	t_timeval	current;
+
 	// long		elapsed_sec;
 	// long		elapsed_usec;
-
 	gettimeofday(&current, NULL);
-	return ((current.tv_sec * 1000) + (current.tv_usec / 1000) - (start.tv_sec * 1000) - (start.tv_usec / 1000));
-
+	return ((current.tv_sec * 1000) + (current.tv_usec / 1000) - (start.tv_sec
+			* 1000) - (start.tv_usec / 1000));
 	// elapsed_sec = current.tv_sec - start.tv_sec;
 	// elapsed_usec = current.tv_usec - start.tv_usec;
 	// if (elapsed_usec < 0)
@@ -82,22 +82,22 @@ void	mutex_message(t_config *config, char *message)
 
 void	mutex_print(t_philo *philo, t_status status)
 {
+	long	elapsed_msec;
+
 	pthread_mutex_lock(philo->config->print_mutex);
+	elapsed_msec = us2ms(get_elapsed_usec(philo->config->start));
 	if (status == DEAD)
-		printf("%ld\t%d died\n", us2ms(get_elapsed_usec(philo->config->start)),
-			philo->id);
+		printf("%ld\t%d died\n", elapsed_msec, philo->id);
 	else if (status == EATING)
-		printf("%ld\t%d is eating\n",
-			us2ms(get_elapsed_usec(philo->config->start)), philo->id);
+		printf("%ld\t%d is eating\n", elapsed_msec, philo->id);
 	else if (status == SLEEPING)
-		printf("%ld\t%d is sleeping\n",
-			us2ms(get_elapsed_usec(philo->config->start)), philo->id);
+		printf("%ld\t%d is sleeping\n", elapsed_msec, philo->id);
 	else if (status == THINKING)
-		printf("%ld\t%d is thinking\n",
-			us2ms(get_elapsed_usec(philo->config->start)), philo->id);
+		printf("%ld\t%d is thinking\n", elapsed_msec, philo->id);
+	else if (status == TAKE_FORK)
+		printf("%ld\t%d has taken a fork\n", elapsed_msec, philo->id);
 	else if (status == TEST)
-		printf("%ld\t%d test\n",
-			us2ms(get_elapsed_usec(philo->config->start)), philo->id);
+		printf("%ld\t%d test\n", elapsed_msec, philo->id);
 	pthread_mutex_unlock(philo->config->print_mutex);
 }
 
@@ -113,7 +113,8 @@ int	philo_is_dead(t_philo *philo)
 
 	last_eat_time = philo->last_eat_timeval;
 	time_to_die = philo->config->time_to_die;
-	printf("# %d last_eat_time: %ld\n", philo->id, get_elapsed_usec(last_eat_time));
+	// printf("\t\t\t\t %d last_eat_time: %ld\n", philo->id,
+	// 	get_elapsed_usec(last_eat_time));
 	if (get_elapsed_usec(last_eat_time) >= (long)time_to_die * 1000)
 		return (1);
 	return (0);
@@ -121,7 +122,7 @@ int	philo_is_dead(t_philo *philo)
 
 int	should_stop(t_philo *philo)
 {
-	mutex_print(philo, TEST);
+	// mutex_print(philo, TEST);
 	if (all_philos_eat_enough(philo->config) || philo->config->is_anyone_dead)
 		return (1);
 	if (philo_is_dead(philo))
@@ -133,32 +134,37 @@ int	should_stop(t_philo *philo)
 	return (0);
 }
 
-void	waiting_for_forks(pthread_mutex_t *fork1, pthread_mutex_t *fork2)
+void	waiting_for_forks(t_philo *philo, pthread_mutex_t *fork1,
+		pthread_mutex_t *fork2)
 {
 	if (pthread_mutex_lock(fork1) != 0)
 		printf("Error: Failed to lock mutex\n");
+	mutex_print(philo, TAKE_FORK);
 	if (pthread_mutex_lock(fork2) != 0)
 	{
 		pthread_mutex_unlock(fork1);
 		printf("Error: Failed to lock mutex\n");
 	}
+	mutex_print(philo, TAKE_FORK);
 }
 
 //
 int	eat(t_philo *philo)
 {
-	waiting_for_forks(philo->left_fork, philo->right_fork);
+	waiting_for_forks(philo, philo->left_fork, philo->right_fork);
 	// 食事前に死んでいないか確認
 	if (should_stop(philo))
 	{
 		pthread_mutex_unlock(philo->right_fork);
 		pthread_mutex_unlock(philo->left_fork);
+		mutex_print(philo, TAKE_FORK);
 		return (1);
 	}
 	mutex_print(philo, EATING);
 	// mutex_print(philo, TEST);
 	usleep(philo->config->time_to_eat * 1000);
-	// printf("%ld\t%d [test]\n", us2ms(get_elapsed_usec(philo->config->start)), philo->id);
+	// printf("%ld\t%d [test]\n", us2ms(get_elapsed_usec(philo->config->start)),
+	// philo->id);
 	// mutex_print(philo, TEST);
 	pthread_mutex_unlock(philo->right_fork);
 	pthread_mutex_unlock(philo->left_fork);
@@ -181,11 +187,13 @@ void	*handle_philo_actions(void *args)
 	// config->last_eat_time[philo->id] = get_elapsed_usec(config->start);
 	gettimeofday(&philo->last_eat_timeval, NULL);
 	i = 0;
-	while (1 || i < 1)
+	while (1 || i < 5)
 	{
+		// mutex_print(philo, TEST);
 		// 食事
 		if (eat(philo))
 			break ;
+
 		// config->eat_count[philo->id]++;
 		// config->last_eat_time[philo->id] = get_elapsed_usec(us2timeval(config->last_eat_time[philo->id]));
 		// 睡眠
@@ -217,7 +225,7 @@ t_config	*init_config(int argc, char **argv, t_config *config)
 	if (argc == 6)
 		config->required_eat_count = atoi(argv[5]);
 	else
-		config->required_eat_count = -1;
+		config->required_eat_count = SIZE_MAX;
 	gettimeofday(&config->start, NULL);
 	config->is_anyone_dead = 0;
 	config->print_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
@@ -294,13 +302,12 @@ int	is_invalid_argument(int argc, char **argv)
 
 void	wait_for_threads(pthread_t *pthreads, size_t num_of_philo)
 {
-	size_t	i;
-
+	size_t		i;
 	i = 0;
 	while (i < num_of_philo)
 	{
 		if (pthread_join(pthreads[i], NULL) != 0)
-			printf("Error: Failed to join thread\n");
+			printf("Error: Failed to join philo thread\n");
 		i++;
 	}
 }
@@ -312,9 +319,11 @@ void	start_threads(pthread_t *pthreads, t_philo *data, size_t num_of_philo)
 	i = 0;
 	while (i < num_of_philo)
 	{
+		// mutex_message(data[0].config, "### create philo thread!!\n");
 		if (pthread_create(&pthreads[i], NULL, &handle_philo_actions,
 				&data[i]) != 0)
-			perror("Failed to create thread");
+			mutex_message(data[0].config, "Failed to create thread\n");
+			// perror("Failed to create thread");
 		i++;
 	}
 }
@@ -351,32 +360,64 @@ pthread_mutex_t	**free_forks(pthread_mutex_t **forks)
 	return (NULL);
 }
 
+
+// void *monitor(void *args)
+// {
+// 	(void) args;
+// 	// fprintf(stderr, "Monitor\n");
+// 	write(2,"--- Monitor thread ---\n", 23);
+// 	return (NULL);
+// }
+
+
+
 int	main(int argc, char **argv)
 {
 	pthread_t		*pthreads;
+	pthread_t		th_monitor;
 	t_config		conf;
 	t_philo			*philos;
+	// t_philo			*philo_args;
 	pthread_mutex_t	**forks;
 
+	// pthread_t		*pthreads;
 	if (is_invalid_argument(argc, argv))
 		return (EXIT_FAILURE);
+
+	
 	// initialize
+	philos = (t_philo *)malloc(sizeof(t_philo) * conf.num_of_philo);
+	
 	init_config(argc, argv, &conf);
 	forks = init_forks(conf.num_of_philo);
 	conf.forks = forks;
-	philos = (t_philo *)malloc(sizeof(t_philo) * conf.num_of_philo);
 	init_philos(philos, &conf);
 	conf.philos = philos;
 	print_philos_forks(philos, conf.num_of_philo);
+	
 	// start threads
 	pthreads = (pthread_t *)malloc(sizeof(pthread_t) * conf.num_of_philo);
+
 	start_threads(pthreads, philos, conf.num_of_philo);
+	if (pthread_create(&th_monitor, NULL, &monitor, &conf) != 0)
+		mutex_message(&conf, "Failed to create monitor thread\n");
+		// perror("Failed to create monitor thread");
+	else 
+		mutex_message(&conf, "### SUCCESS create monitor thread!!\n");
+	
+
 	// wait for threads
+	mutex_message(&conf, "### waiting for threads!!!!\n");
 	wait_for_threads(pthreads, conf.num_of_philo);
+	if (pthread_join(th_monitor, NULL) != 0)
+		perror("Failed to join monitor thread");
+
+		
 	// free
 	free(pthreads);
 	free(philos);
 	forks = free_forks(forks);
 	printf("complete\n");
 	return (0);
+
 }

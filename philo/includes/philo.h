@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:22:03 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/12 20:55:46 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/13 08:11:39 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,16 +52,24 @@ typedef enum e_status
 	EATING,
 	SLEEPING,
 	THINKING,
+	TAKE_FORK,
 	TEST
 }						t_status;
 
 long					get_elapsed_usec(t_timeval start);
 long					us2ms(long usec);
+int						philo_is_dead(t_philo *philo);
+void					mutex_print(t_philo *philo, t_status status);
+
+
+void *monitor(void *args);
 
 // print.c
 void					print_config(t_config *config);
 void					print_philo(t_philo *data);
 void					print_forks(pthread_mutex_t **forks);
 void					print_philos_forks(t_philo *data, size_t num_of_philo);
+
+void	mutex_message(t_config *config, char *message);
 
 #endif
