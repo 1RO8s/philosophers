@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := all
 
 CC		:= cc
-CFLAGS	:= -Wall -Wextra -Werror
+CFLAGS	:= -Wall -Wextra -Werror -fsanitize=thread
 NAME	:= philo
 SRCS	:= srcs/main.c srcs/print.c srcs/monitor.c
 OBJS	:= $(SRCS:.c=.o)
@@ -12,8 +12,13 @@ INC := -Iincludes
 	$(CC) ${CFLAGS} ${INC} -c $< -o $@
 
 all:	$(NAME)
+
 $(NAME):	$(OBJS)
 	$(CC) $(CFLAGS) $(INC) $(OBJS) -o $(NAME)
+
+debug: CFLAGS += $(DEBUG_FLAGS)
+debug: $(NAME)
+	# lldb ./$(NAME)
 
 clean:
 	rm -f $(OBJS)
