@@ -4,6 +4,7 @@ CC		:= cc
 CFLAGS	:= -Wall -Wextra -Werror -pthread
 SANITIZE_THREAD := -fsanitize=thread
 SANITIZE_ADDRESS := -fsanitize=address
+DEBUG_FLAGS := -g3
 
 NAME	:= philo
 SRCS	:= srcs/main.c srcs/print.c srcs/monitor.c srcs/timer.c
@@ -23,6 +24,12 @@ debug: CFLAGS += $(DEBUG_FLAGS)
 debug: $(NAME)
 	# lldb ./$(NAME)
 
+tsan: CFLAGS += $(SANITIZE_THREAD)
+tsan: re
+
+asan: CFLAGS += $(SANITIZE_ADDRESS)
+asan: re
+
 clean:
 	rm -f $(OBJS)
 
@@ -31,4 +38,4 @@ fclean: clean
 
 re:		fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re debug tsan asan
