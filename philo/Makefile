@@ -1,9 +1,12 @@
 .DEFAULT_GOAL := all
 
 CC		:= cc
-CFLAGS	:= -Wall -Wextra -Werror -fsanitize=thread
+CFLAGS	:= -Wall -Wextra -Werror -pthread
+SANITIZE_THREAD := -fsanitize=thread
+SANITIZE_ADDRESS := -fsanitize=address
+
 NAME	:= philo
-SRCS	:= srcs/main.c srcs/print.c srcs/monitor.c
+SRCS	:= srcs/main.c srcs/print.c srcs/monitor.c srcs/timer.c
 OBJS	:= $(SRCS:.c=.o)
 SRCS_DIR	:= srcs
 INC := -Iincludes
