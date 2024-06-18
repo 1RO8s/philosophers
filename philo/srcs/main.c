@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/18 09:18:17 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/19 06:41:52 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,22 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+int	read_is_anyone_dead(t_config *config)
+{
+	int	value;
 
+	pthread_mutex_lock(config->is_anyone_dead_mutex);
+	value = config->is_anyone_dead;
+	pthread_mutex_unlock(config->is_anyone_dead_mutex);
+	return (value);
+}
+
+void	update_is_anyone_dead(t_config *config, int value)
+{
+	pthread_mutex_lock(config->is_anyone_dead_mutex);
+	config->is_anyone_dead = value;
+	pthread_mutex_unlock(config->is_anyone_dead_mutex);
+}
 
 long	get_elapsed_usec(t_timeval start)
 {
@@ -110,11 +125,13 @@ int	philo_is_dead(t_philo *philo)
 int	should_stop(t_philo *philo)
 {
 	// mutex_print(philo, TEST);
-	if (all_philos_eat_enough(philo->config) || philo->config->is_anyone_dead)
+	if (all_philos_eat_enough(philo->config)
+		|| read_is_anyone_dead(philo->config))
 		return (1);
 	if (philo_is_dead(philo))
 	{
-		philo->config->is_anyone_dead = 1;
+		// philo->config->is_anyone_dead = 1;
+		update_is_anyone_dead(philo->config, 1);
 		mutex_print(philo, DEAD);
 		return (1);
 	}
@@ -164,12 +181,12 @@ int	eat(t_philo *philo)
 
 void	*handle_philo_actions(void *args)
 {
-	t_philo		*philo;
-	t_config	*config;
-	size_t		i;
+	t_philo	*philo;
+	size_t	i;
 
+	// t_config	*config;
 	philo = (t_philo *)args;
-	config = philo->config;
+	// config = philo->config;
 	// config->last_eat_time[philo->id] = get_elapsed_usec(config->start);
 	gettimeofday(&philo->last_eat_timeval, NULL);
 	i = 0;
@@ -183,18 +200,14 @@ void	*handle_philo_actions(void *args)
 		// config->eat_count[philo->id]++;
 		// config->last_eat_time[philo->id] = get_elapsed_usec(us2timeval(config->last_eat_time[philo->id]));
 		// 睡眠
-		if (philo_is_dead(philo))
-			config->is_anyone_dead = 1;
-		if (all_philos_eat_enough(config) || config->is_anyone_dead)
+		if (should_stop(philo))
 			break ;
 		// philo->eat_count++;
 		// gettimeofday(&philo->last_eat_timeval, NULL);
 		mutex_print(philo, SLEEPING);
 		usleep(philo->config->time_to_sleep * 1000);
 		// 思考して次の食事を待つ
-		if (philo_is_dead(philo))
-			config->is_anyone_dead = 1;
-		if (all_philos_eat_enough(config) || config->is_anyone_dead)
+		if (should_stop(philo))
 			break ;
 		mutex_print(philo, THINKING);
 		i++;
@@ -334,39 +347,23 @@ void	init_philos(t_philo *philos, t_config *config)
 	i = 0;
 	while (i < config->num_of_philo)
 	{
-		printf("config->forks @philos[%zu] 0\n", i);
-		print_config_forks(config);
+		
 		// philos[i].left_fork = NULL;
 		// philos[i].right_fork = NULL;
 		philos[i].id = i;
 		philos[i].left_fork = config->forks[i];
 		if (i + 1 != config->num_of_philo)
 		{
-			printf("config->forks @philos[%zu] 01\n", i);
-			print_config_forks(config);
 			philos[i].right_fork = config->forks[i + 1];
-			printf("config->forks @philos[%zu] 02\n", i);
-			print_config_forks(config);
 		}
 		else
 		{
 			philos[i].right_fork = config->forks[0];
 		}
-
-		printf("config->forks @philos[%zu] 03\n", i);
-		print_config_forks(config);
 		philos[i].eat_count = 0;
-		printf("config->forks @philos[%zu] 04\n", i);
-		print_config_forks(config);
-
-		printf("config->forks @philos[%zu] 1\n", i);
-		print_config_forks(config);
 		philos[i].last_eat_timeval = config->start;
-		printf("config->forks @philos[%zu] 2\n", i);
-		print_config_forks(config);
 		philos[i].config = config;
-		printf("config->forks @philos[%zu] 3\n", i);
-		print_config_forks(config);
+		
 		i++;
 	}
 }
@@ -397,7 +394,7 @@ pthread_mutex_t	**free_forks(pthread_mutex_t **forks)
 int	main(int argc, char **argv)
 {
 	pthread_t *pthreads;
-	pthread_t *th_monitor;
+	pthread_t th_monitor;
 	t_config conf;
 	t_philo *philos;
 	// t_philo			*philo_args;
@@ -412,11 +409,9 @@ int	main(int argc, char **argv)
 
 	init_config(argc, argv, &conf);
 	forks = init_forks(conf.num_of_philo);
-	printf("forks[2]: %p\n", forks[2]);
-	printf("forks[3]: %p\n", forks[3]);
+
 	conf.forks = forks;
-	printf("conf.forks[2]: %p\n", conf.forks[2]);
-	printf("conf.forks[3]: %p\n", conf.forks[3]);
+
 	init_philos(philos, &conf);
 	conf.philos = philos;
 	print_philos_forks(philos, conf.num_of_philo);
@@ -425,24 +420,13 @@ int	main(int argc, char **argv)
 	pthreads = (pthread_t *)malloc(sizeof(pthread_t) * conf.num_of_philo);
 	start_philos(pthreads, philos, conf.num_of_philo);
 
-	
-	th_monitor = (pthread_t *)malloc(sizeof(pthread_t));
-	start_monitor(th_monitor, &conf);
-	// pthread_create(&th_monitor, NULL, &monitor, NULL);
-	// if (pthread_create(&th_monitor, NULL, &monitor, &conf) != 0)
-	// 	mutex_message(&conf, "Failed to create monitor thread\n");
-	// else
-	// 	mutex_message(&conf, "### SUCCESS create monitor thread!!\n");
-	// if (pthread_create(&th_monitor, NULL, &monitor, &conf) != 0)
-	// 	perror("Failed to create monitor thread\n");
-	// else
-	// 	perror("### SUCCESS create monitor thread!!\n");
+	// th_monitor = (pthread_t *)malloc(sizeof(pthread_t));
+	start_monitor(&th_monitor, &conf);
 
 	// wait for threads
-	mutex_message(&conf, "### waiting for threads!!!!\n");
-	// wait_for_threads(pthreads, conf.num_of_philo);
-	// if (pthread_join(th_monitor, NULL) != 0)
-	// 	perror("Failed to join monitor thread");
+	wait_for_threads(pthreads, conf.num_of_philo);
+	if (pthread_join(th_monitor, NULL) != 0)
+		perror("Failed to join monitor thread");
 
 	// free
 	free(pthreads);

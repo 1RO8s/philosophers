@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:22:03 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/18 09:10:26 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/18 09:43:14 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,8 @@ typedef struct s_config
 	pthread_mutex_t		**forks;
 	t_timeval			start;
 	int					is_anyone_dead;
-	// size_t				*eat_count;
-	// long				*last_eat_time;
 	pthread_mutex_t		*print_mutex;
+	pthread_mutex_t		*is_anyone_dead_mutex;
 	t_philo				*philos;
 }						t_config;
 
