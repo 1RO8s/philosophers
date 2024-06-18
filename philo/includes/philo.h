@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:22:03 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/13 08:11:39 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/18 09:10:26 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,11 @@ void					mutex_print(t_philo *philo, t_status status);
 
 
 void *monitor(void *args);
+void start_monitor(pthread_t	*monitor_thread, t_config *config);
+
+// timer.c
+long	us2ms(long usec);
+t_timeval	us2timeval(long usec);
 
 // print.c
 void					print_config(t_config *config);

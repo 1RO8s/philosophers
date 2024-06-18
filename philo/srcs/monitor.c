@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 04:18:17 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/16 07:06:17 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/18 09:20:09 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,4 +66,18 @@ void *monitor(void *args)
 	// 	}
 	// }
 	return (NULL);
+}
+
+
+void start_monitor(pthread_t	*monitor_thread, t_config *config)
+{
+	// monitor_thread = (pthread_t *)malloc(sizeof(pthread_t));
+	if(pthread_create(monitor_thread, NULL, monitor, config) != 0)
+	{
+		mutex_message(config, "Error: failed to create monitor thread\n");
+	}
+	else
+	{
+		mutex_message(config, "Success: created monitor thread\n");
+	}
 }

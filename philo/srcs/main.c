@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/16 06:54:58 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/18 09:18:17 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,20 +15,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-long	us2ms(long usec)
-{
-	return (usec);
-	// return (usec / 1000);
-}
 
-t_timeval	us2timeval(long usec)
-{
-	struct timeval	time;
-
-	time.tv_sec = usec / 1000000;
-	time.tv_usec = usec % 1000000;
-	return (time);
-}
 
 long	get_elapsed_usec(t_timeval start)
 {
@@ -310,7 +297,7 @@ void	wait_for_threads(pthread_t *pthreads, size_t num_of_philo)
 	}
 }
 
-void	start_threads(pthread_t *pthreads, t_philo *data, size_t num_of_philo)
+void	start_philos(pthread_t *pthreads, t_philo *data, size_t num_of_philo)
 {
 	size_t	i;
 
@@ -410,7 +397,7 @@ pthread_mutex_t	**free_forks(pthread_mutex_t **forks)
 int	main(int argc, char **argv)
 {
 	pthread_t *pthreads;
-	// pthread_t th_monitor;
+	pthread_t *th_monitor;
 	t_config conf;
 	t_philo *philos;
 	// t_philo			*philo_args;
@@ -436,8 +423,11 @@ int	main(int argc, char **argv)
 
 	// start threads
 	pthreads = (pthread_t *)malloc(sizeof(pthread_t) * conf.num_of_philo);
+	start_philos(pthreads, philos, conf.num_of_philo);
 
-	start_threads(pthreads, philos, conf.num_of_philo);
+	
+	th_monitor = (pthread_t *)malloc(sizeof(pthread_t));
+	start_monitor(th_monitor, &conf);
 	// pthread_create(&th_monitor, NULL, &monitor, NULL);
 	// if (pthread_create(&th_monitor, NULL, &monitor, &conf) != 0)
 	// 	mutex_message(&conf, "Failed to create monitor thread\n");
