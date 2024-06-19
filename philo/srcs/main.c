@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/19 06:41:52 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/20 03:04:36 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,17 +19,17 @@ int	read_is_anyone_dead(t_config *config)
 {
 	int	value;
 
-	pthread_mutex_lock(config->is_anyone_dead_mutex);
+	pthread_mutex_lock(&config->is_anyone_dead_mutex);
 	value = config->is_anyone_dead;
-	pthread_mutex_unlock(config->is_anyone_dead_mutex);
+	pthread_mutex_unlock(&config->is_anyone_dead_mutex);
 	return (value);
 }
 
 void	update_is_anyone_dead(t_config *config, int value)
 {
-	pthread_mutex_lock(config->is_anyone_dead_mutex);
+	pthread_mutex_lock(&config->is_anyone_dead_mutex);
 	config->is_anyone_dead = value;
-	pthread_mutex_unlock(config->is_anyone_dead_mutex);
+	pthread_mutex_unlock(&config->is_anyone_dead_mutex);
 }
 
 long	get_elapsed_usec(t_timeval start)
@@ -77,16 +77,16 @@ int	all_philos_eat_enough(t_config *config)
 
 void	mutex_message(t_config *config, char *message)
 {
-	pthread_mutex_lock(config->print_mutex);
+	pthread_mutex_lock(&config->print_mutex);
 	printf("%s", message);
-	pthread_mutex_unlock(config->print_mutex);
+	pthread_mutex_unlock(&config->print_mutex);
 }
 
 void	mutex_print(t_philo *philo, t_status status)
 {
 	long	elapsed_msec;
 
-	pthread_mutex_lock(philo->config->print_mutex);
+	pthread_mutex_lock(&philo->config->print_mutex);
 	elapsed_msec = us2ms(get_elapsed_usec(philo->config->start));
 	if (status == DEAD)
 		printf("%ld\t%d died\n", elapsed_msec, philo->id);
@@ -100,7 +100,7 @@ void	mutex_print(t_philo *philo, t_status status)
 		printf("%ld\t%d has taken a fork\n", elapsed_msec, philo->id);
 	else if (status == TEST)
 		printf("%ld\t%d test\n", elapsed_msec, philo->id);
-	pthread_mutex_unlock(philo->config->print_mutex);
+	pthread_mutex_unlock(&philo->config->print_mutex);
 }
 
 /**
@@ -112,30 +112,39 @@ int	philo_is_dead(t_philo *philo)
 {
 	t_timeval	last_eat_time;
 	size_t		time_to_die;
+	long from_last_eat;
+
 
 	last_eat_time = philo->last_eat_timeval;
+	from_last_eat = get_elapsed_usec(last_eat_time);
 	time_to_die = philo->config->time_to_die;
-	// printf("\t\t\t\t %d last_eat_time: %ld\n", philo->id,
+	// printf("\t\t\t\t %d from_last_eat: %ld\n", philo->id,
 	// 	get_elapsed_usec(last_eat_time));
-	if (get_elapsed_usec(last_eat_time) >= (long)time_to_die * 1000)
+	if (from_last_eat >= (long)time_to_die)
 		return (1);
 	return (0);
 }
 
 int	should_stop(t_philo *philo)
 {
-	// mutex_print(philo, TEST);
-	if (all_philos_eat_enough(philo->config)
-		|| read_is_anyone_dead(philo->config))
+	t_config	*config;
+
+	config = philo->config;
+	if (read_is_anyone_dead(config) != CONTINUE)
 		return (1);
-	if (philo_is_dead(philo))
-	{
-		// philo->config->is_anyone_dead = 1;
-		update_is_anyone_dead(philo->config, 1);
-		mutex_print(philo, DEAD);
-		return (1);
-	}
 	return (0);
+	// mutex_print(philo, TEST);
+	// if (all_philos_eat_enough(philo->config)
+	// 	|| read_is_anyone_dead(philo->config))
+	// 	return (1);
+	// if (philo_is_dead(philo))
+	// {
+	// 	// philo->config->is_anyone_dead = 1;
+	// 	update_is_anyone_dead(philo->config, 1);
+	// 	mutex_print(philo, DEAD);
+	// 	return (1);
+	// }
+	// return (0);
 }
 
 void	waiting_for_forks(t_philo *philo, pthread_mutex_t *fork1,
@@ -143,39 +152,56 @@ void	waiting_for_forks(t_philo *philo, pthread_mutex_t *fork1,
 {
 	if (pthread_mutex_lock(fork1) != 0)
 		printf("Error: Failed to lock fork1[%p]\n", fork1);
+	if (should_stop(philo))
+	{
+		pthread_mutex_unlock(fork1);
+		return ;
+	}
 	mutex_print(philo, TAKE_FORK);
 	if (pthread_mutex_lock(fork2) != 0)
 	{
 		pthread_mutex_unlock(fork1);
 		printf("Error: Failed to lock fork2[%p]\n", fork2);
 	}
+	if (should_stop(philo))
+	{
+		pthread_mutex_unlock(fork1);
+		pthread_mutex_unlock(fork2);
+		return ;
+	}
 	mutex_print(philo, TAKE_FORK);
+}
+
+void	update_last_eat_time(t_philo *philo)
+{
+	// mutex_print(philo, TEST);
+	gettimeofday(&philo->last_eat_timeval, NULL);
+	// mutex_print(philo, TEST);
 }
 
 //
 int	eat(t_philo *philo)
 {
 	waiting_for_forks(philo, philo->left_fork, philo->right_fork);
-	// 食事前に死んでいないか確認
 	if (should_stop(philo))
 	{
+		// mutex_message(philo->config, "before eating\n");
 		pthread_mutex_unlock(philo->right_fork);
 		pthread_mutex_unlock(philo->left_fork);
 		return (1);
 	}
 	mutex_print(philo, EATING);
+	update_last_eat_time(philo);
 	usleep(philo->config->time_to_eat * 1000);
-	// printf("%ld\t%d [test]\n", us2ms(get_elapsed_usec(philo->config->start)),
-	// philo->id);
-	// mutex_print(philo, TEST);
 	pthread_mutex_unlock(philo->right_fork);
 	pthread_mutex_unlock(philo->left_fork);
-	mutex_print(philo, TEST);
-	// 食事後に死んでいないか確認
 	if (should_stop(philo))
+	{
+		// mutex_message(philo->config, "after eating\n");
 		return (1);
+	}
 	philo->eat_count++;
-	gettimeofday(&philo->last_eat_timeval, NULL);
+	update_last_eat_time(philo);
 	return (0);
 }
 
@@ -188,31 +214,64 @@ void	*handle_philo_actions(void *args)
 	philo = (t_philo *)args;
 	// config = philo->config;
 	// config->last_eat_time[philo->id] = get_elapsed_usec(config->start);
+	// print is_anyone_dead_mutex address of philo
+	// printf("philo[%d]  is_anyone_dead_mutex: %p\n", philo->id,
+	// 	(void *)philo->config->is_anyone_dead_mutex);
 	gettimeofday(&philo->last_eat_timeval, NULL);
 	i = 0;
-	while (1 || i < 5)
+	while (1 || i < 100)
 	{
 		// mutex_print(philo, TEST);
 		// 食事
 		if (eat(philo))
 			break ;
-		break ;
 		// config->eat_count[philo->id]++;
 		// config->last_eat_time[philo->id] = get_elapsed_usec(us2timeval(config->last_eat_time[philo->id]));
 		// 睡眠
 		if (should_stop(philo))
+		{
+			// mutex_message(philo->config, "before sleeping\n");
 			break ;
+		}
 		// philo->eat_count++;
 		// gettimeofday(&philo->last_eat_timeval, NULL);
 		mutex_print(philo, SLEEPING);
 		usleep(philo->config->time_to_sleep * 1000);
 		// 思考して次の食事を待つ
 		if (should_stop(philo))
+		{
+			// mutex_message(philo->config, "before thinking\n");
 			break ;
+		}
 		mutex_print(philo, THINKING);
 		i++;
 	}
 	return (NULL);
+}
+
+void	set_args(int argc, char **argv, t_config *config)
+{
+	config->num_of_philo = atoi(argv[1]);
+	config->time_to_die = atoi(argv[2]);
+	config->time_to_eat = atoi(argv[3]);
+	config->time_to_sleep = atoi(argv[4]);
+	if (argc == 6)
+		config->required_eat_count = atoi(argv[5]);
+	else
+		config->required_eat_count = SIZE_MAX;
+	gettimeofday(&config->start, NULL);
+	config->is_anyone_dead = 0;
+	if (pthread_mutex_init(&config->print_mutex, NULL) != 0)
+	{
+		perror("Failed to initialize print mutex");
+		exit(1);
+	}
+	if (pthread_mutex_init(&config->is_anyone_dead_mutex, NULL) != 0)
+	{
+		perror("Failed to initialize is_anyone_dead mutex");
+		exit(1);
+	}
+	print_config(config);
 }
 
 t_config	*init_config(int argc, char **argv, t_config *config)
@@ -227,8 +286,19 @@ t_config	*init_config(int argc, char **argv, t_config *config)
 		config->required_eat_count = SIZE_MAX;
 	gettimeofday(&config->start, NULL);
 	config->is_anyone_dead = 0;
-	config->print_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
-	pthread_mutex_init(config->print_mutex, NULL);
+	// config->print_mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+	// pthread_mutex_init(&config->is_anyone_dead_mutex, NULL);
+	// pthread_mutex_init(&config->print_mutex, NULL);
+	if (pthread_mutex_init(&config->print_mutex, NULL) != 0)
+	{
+		perror("Failed to initialize print mutex");
+		exit(1);
+	}
+	if (pthread_mutex_init(&config->is_anyone_dead_mutex, NULL) != 0)
+	{
+		perror("Failed to initialize is_anyone_dead mutex");
+		exit(1);
+	}
 	print_config(config);
 	return (config);
 }
@@ -244,6 +314,7 @@ pthread_mutex_t	**init_forks(size_t num)
 		printf("Error: Failed to allocate memory for forks array\n");
 		return (NULL);
 	}
+	printf("init_forks: %p\n", (void *)forks);
 	for (i = 0; i < num; i++)
 	{
 		forks[i] = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
@@ -255,7 +326,6 @@ pthread_mutex_t	**init_forks(size_t num)
 			free(forks);
 			return (NULL);
 		}
-		printf("# forks[%zu]: %p\n", i, forks[i]);
 		if (pthread_mutex_init(forks[i], NULL) != 0)
 		{
 			printf("Error: Failed to initialize mutex\n");
@@ -264,10 +334,11 @@ pthread_mutex_t	**init_forks(size_t num)
 				pthread_mutex_destroy(forks[--i]);
 				free(forks[i]);
 			}
-			free(forks[i]); // The last allocated mutex also needs to be freed
+			free(forks[i]);
 			free(forks);
 			return (NULL);
 		}
+		printf("init_forks[%zu]: %p\n", i, (void *)forks[i]);
 	}
 	return (forks);
 }
@@ -347,9 +418,6 @@ void	init_philos(t_philo *philos, t_config *config)
 	i = 0;
 	while (i < config->num_of_philo)
 	{
-		
-		// philos[i].left_fork = NULL;
-		// philos[i].right_fork = NULL;
 		philos[i].id = i;
 		philos[i].left_fork = config->forks[i];
 		if (i + 1 != config->num_of_philo)
@@ -363,17 +431,16 @@ void	init_philos(t_philo *philos, t_config *config)
 		philos[i].eat_count = 0;
 		philos[i].last_eat_timeval = config->start;
 		philos[i].config = config;
-		
 		i++;
 	}
 }
 
-pthread_mutex_t	**free_forks(pthread_mutex_t **forks)
+pthread_mutex_t	**free_forks(pthread_mutex_t **forks, size_t num)
 {
 	size_t	i;
 
 	i = 0;
-	while (forks[i] != NULL)
+	while (i < num)
 	{
 		pthread_mutex_destroy(forks[i]);
 		free(forks[i]);
@@ -391,25 +458,38 @@ pthread_mutex_t	**free_forks(pthread_mutex_t **forks)
 // 	return (NULL);
 // }
 
+void print_result(t_config *config)
+{
+	if (config->is_anyone_dead == DIED)
+		printf("FAILURE: A philosopher died\n");
+	else if (config->is_anyone_dead == FULLFILLED)
+		printf("SUCCESS: All philosophers are fullfilled\n");
+}
+
 int	main(int argc, char **argv)
 {
 	pthread_t *pthreads;
+	t_philo *philos;
 	pthread_t th_monitor;
 	t_config conf;
-	t_philo *philos;
 	// t_philo			*philo_args;
 	pthread_mutex_t **forks;
 
 	// pthread_t		*pthreads;
 	if (is_invalid_argument(argc, argv))
 		return (EXIT_FAILURE);
+	set_args(argc, argv, &conf);
 
 	// initialize
 	philos = (t_philo *)malloc(sizeof(t_philo) * conf.num_of_philo);
+	if (philos == NULL)
+	{
+		printf("Error: Failed to allocate memory for philos array\n");
+		return (EXIT_FAILURE);
+	}
 
 	init_config(argc, argv, &conf);
 	forks = init_forks(conf.num_of_philo);
-
 	conf.forks = forks;
 
 	init_philos(philos, &conf);
@@ -431,7 +511,7 @@ int	main(int argc, char **argv)
 	// free
 	free(pthreads);
 	free(philos);
-	forks = free_forks(forks);
-	printf("complete\n");
+	forks = free_forks(forks, conf.num_of_philo);
+	print_result(&conf);
 	return (0);
 }

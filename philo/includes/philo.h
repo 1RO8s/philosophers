@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:22:03 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/18 09:43:14 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/19 09:13:24 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,8 @@ typedef struct s_config
 	pthread_mutex_t		**forks;
 	t_timeval			start;
 	int					is_anyone_dead;
-	pthread_mutex_t		*print_mutex;
-	pthread_mutex_t		*is_anyone_dead_mutex;
+	pthread_mutex_t		is_anyone_dead_mutex;
+	pthread_mutex_t		print_mutex;
 	t_philo				*philos;
 }						t_config;
 
@@ -44,6 +44,13 @@ typedef struct s_philo
 	t_timeval			last_eat_timeval;
 	t_config			*config;
 }						t_philo;
+
+typedef enum e_monitor_result
+{
+	CONTINUE,
+	DIED,
+	FULLFILLED
+}						t_monitor_result;
 
 typedef enum e_status
 {
@@ -59,14 +66,18 @@ long					get_elapsed_usec(t_timeval start);
 long					us2ms(long usec);
 int						philo_is_dead(t_philo *philo);
 void					mutex_print(t_philo *philo, t_status status);
+void					mutex_message(t_config *config, char *message);
 
+void					*monitor(void *args);
+void					start_monitor(pthread_t *monitor_thread,
+							t_config *config);
 
-void *monitor(void *args);
-void start_monitor(pthread_t	*monitor_thread, t_config *config);
+void					update_is_anyone_dead(t_config *config, int value);
+int						read_is_anyone_dead(t_config *config);
 
 // timer.c
-long	us2ms(long usec);
-t_timeval	us2timeval(long usec);
+long					us2ms(long usec);
+t_timeval				us2timeval(long usec);
 
 // print.c
 void					print_config(t_config *config);
@@ -74,6 +85,6 @@ void					print_philo(t_philo *data);
 void					print_forks(pthread_mutex_t **forks);
 void					print_philos_forks(t_philo *data, size_t num_of_philo);
 
-void	mutex_message(t_config *config, char *message);
+void					mutex_message(t_config *config, char *message);
 
 #endif
