@@ -6,14 +6,14 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 04:18:17 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/20 03:05:03 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/21 04:51:10 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 #include <stdlib.h>
 #include <stdio.h> // for printf
-
+#include <unistd.h> // for usleep
 
 void *monitor(void *args)
 {
@@ -61,6 +61,7 @@ void *monitor(void *args)
 			// mutex_message(config, "All philos are fullfilled\n");
 			return (NULL);
 		}
+		// usleep(100);
 	}
 	mutex_message(config, "monitor thread end\n");
 	return (NULL);
