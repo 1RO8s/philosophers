@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/21 07:20:32 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/23 05:00:31 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ void	mutex_print(t_philo *philo, t_status status)
 		// dead_time = elapsed_msec - from_last_eat
 			// + philo->config->time_to_die;
 		// printf("%ld\t%d died\n", elapsed_msec, philo->id);
-		printf("%ld\t%d died %ld\n", elapsed_msec, philo->id, elapsed_msec
+		printf("%ld\t%d died ,last_eat:%ld\n", elapsed_msec, philo->id, elapsed_msec
 			- from_last_eat);
 	}
 	else if (status == EATING)
