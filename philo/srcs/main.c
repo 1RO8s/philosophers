@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/23 05:00:31 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/26 19:09:37 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+void	ft_sleep(t_config conf, long msec)
+{
+	long	start;
+	long	current;
+
+	start = get_elapsed_usec(conf.start);
+	while (1)
+	{
+		current = get_elapsed_usec(conf.start);
+		if (current - start >= msec)
+			break ;
+		usleep(100);
+	}
+}
 
 int	read_is_anyone_dead(t_config *config)
 {
@@ -36,20 +51,9 @@ long	get_elapsed_usec(t_timeval start)
 {
 	t_timeval	current;
 
-	// long		elapsed_sec;
-	// long		elapsed_usec;
 	gettimeofday(&current, NULL);
 	return ((current.tv_sec * 1000) + (current.tv_usec / 1000) - (start.tv_sec
 			* 1000) - (start.tv_usec / 1000));
-	// elapsed_sec = current.tv_sec - start.tv_sec;
-	// elapsed_usec = current.tv_usec - start.tv_usec;
-	// if (elapsed_usec < 0)
-	// {
-	// 	elapsed_sec--;
-	// 	elapsed_usec += 1000000;
-	// }
-	// elapsed_usec = elapsed_sec * 1000000 + elapsed_usec;
-	// return (elapsed_usec);
 }
 
 int	all_philos_eat_enough(t_config *config)
@@ -59,19 +63,14 @@ int	all_philos_eat_enough(t_config *config)
 	t_philo	*philos;
 
 	philos = config->philos;
-	// printf("-----  all_philos_eat_enough -----\n");
 	num_of_philo = config->num_of_philo;
 	i = 0;
 	while (i < num_of_philo)
 	{
-		// printf("eat_count[%zu]: %zu, ", i, config->eat_count[i]);
-		// if (config->eat_count[i] < config->required_eat_count)
 		if (philos[i].eat_count < config->required_eat_count)
 			return (0);
 		i++;
 	}
-	// printf("\n");
-	// printf("All philosophers have eaten enough\n");
 	return (1);
 }
 
@@ -94,10 +93,10 @@ void	mutex_print(t_philo *philo, t_status status)
 	{
 		from_last_eat = get_elapsed_usec(philo->last_eat_timeval);
 		// dead_time = elapsed_msec - from_last_eat
-			// + philo->config->time_to_die;
+		// + philo->config->time_to_die;
 		// printf("%ld\t%d died\n", elapsed_msec, philo->id);
-		printf("%ld\t%d died ,last_eat:%ld\n", elapsed_msec, philo->id, elapsed_msec
-			- from_last_eat);
+		printf("%ld\t%d died ,last_eat:%ld\n", elapsed_msec, philo->id,
+			elapsed_msec - from_last_eat);
 	}
 	else if (status == EATING)
 		printf("%ld\t%d is eating\n", elapsed_msec, philo->id);
@@ -250,14 +249,16 @@ void	wait_for_forks(t_philo *philo)
 	if (philo->id % 2 == 1)
 	{
 		if (get_elapsed_usec(philo->config->start) < 50)
-			usleep(config->time_to_eat * 1);
+			// usleep(config->time_to_eat * 1);
+			ft_sleep(*config, 10);
 	}
 	// 哲学者が奇数人数の場合、最後の哲学者は少し待つ
 	if (total_philos % 2 == 1 && philo->id == total_philos - 1)
 	{
 		// sleep for 50ms if get_elapsed_usec is least 50ms
 		if (get_elapsed_usec(philo->config->start) < 50)
-			usleep(config->time_to_eat * 5);
+			// usleep(config->time_to_eat * 5);
+			ft_sleep(*config, 10);
 		// mutex_message(config, "last philo 2\n");
 	}
 	// 偶数番号の哲学者は通常通り左フォークから取る
@@ -279,7 +280,7 @@ void	update_last_eat_time(t_philo *philo)
 	// mutex_print(philo, TEST);
 }
 
-void put_forks(pthread_mutex_t *fork1, pthread_mutex_t *fork2)
+void	put_forks(pthread_mutex_t *fork1, pthread_mutex_t *fork2)
 {
 	pthread_mutex_unlock(fork1);
 	pthread_mutex_unlock(fork2);
@@ -297,8 +298,9 @@ int	eat(t_philo *philo)
 		return (1);
 	}
 	mutex_print(philo, EATING);
-	update_last_eat_time(philo);
-	usleep(philo->config->time_to_eat * 995);
+	// update_last_eat_time(philo);
+	// usleep(philo->config->time_to_eat * 1000);
+	ft_sleep(*philo->config, philo->config->time_to_eat);
 	put_forks(philo->right_fork, philo->left_fork);
 	if (should_stop(philo))
 	{
@@ -306,7 +308,7 @@ int	eat(t_philo *philo)
 		return (1);
 	}
 	philo->eat_count++;
-	// update_last_eat_time(philo);
+	update_last_eat_time(philo);
 	return (0);
 }
 
@@ -331,7 +333,8 @@ void	*handle_philo_actions(void *args)
 			break ;
 		}
 		mutex_print(philo, SLEEPING);
-		usleep(philo->config->time_to_sleep * 995);
+		// usleep(philo->config->time_to_sleep * 1000);
+		ft_sleep(*philo->config, philo->config->time_to_sleep);
 		if (should_stop(philo))
 		{
 			// mutex_message(philo->config, "before thinking\n");
