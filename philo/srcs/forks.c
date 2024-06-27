@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 11:13:54 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/27 20:07:47 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/27 20:37:41 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,12 +93,12 @@ void	wait_for_forks(t_philo *philo)
 	if (philo->id % 2 == 1)
 	{
 		if (get_elapsed_usec(philo->config->start) < 50)
-			ft_sleep(*config, 10);
+			ft_sleep(config, 10);
 	}
 	if (total_philos % 2 == 1 && philo->id == total_philos - 1)
 	{
 		if (get_elapsed_usec(philo->config->start) < 50)
-			ft_sleep(*config, 10);
+			ft_sleep(config, 10);
 	}
 	if (philo->id % 2 == 0)
 		waiting_for_forks(philo, philo->left_fork, philo->right_fork);

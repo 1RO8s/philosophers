@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 18:20:34 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/27 18:24:20 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/27 20:38:09 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ static int	eat(t_philo *philo)
 	}
 	mutex_print(philo, EATING);
 	update_last_eat_time(philo);
-	ft_sleep(*philo->config, philo->config->time_to_eat);
+	ft_sleep(philo->config, philo->config->time_to_eat);
 	put_forks(philo->right_fork, philo->left_fork);
 	if (should_stop(philo))
 		return (1);
@@ -50,7 +50,7 @@ void	*handle_philo_actions(void *args)
 		if (should_stop(philo))
 			break ;
 		mutex_print(philo, SLEEPING);
-		ft_sleep(*philo->config, philo->config->time_to_sleep);
+		ft_sleep(philo->config, philo->config->time_to_sleep);
 		if (should_stop(philo))
 			break ;
 		mutex_print(philo, THINKING);

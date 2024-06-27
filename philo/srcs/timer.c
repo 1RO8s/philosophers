@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/18 09:01:29 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/27 18:15:58 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/27 20:37:00 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,15 +27,15 @@ t_timeval	us2timeval(long usec)
 	return (time);
 }
 
-void	ft_sleep(t_config conf, long msec)
+void	ft_sleep(t_config *config, long msec)
 {
 	long	start;
 	long	current;
 
-	start = get_elapsed_usec(conf.start);
+	start = get_elapsed_usec(config->start);
 	while (1)
 	{
-		current = get_elapsed_usec(conf.start);
+		current = get_elapsed_usec(config->start);
 		if (current - start >= msec)
 			break ;
 		usleep(100);

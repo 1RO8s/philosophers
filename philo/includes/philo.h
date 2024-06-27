@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:22:03 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/27 20:09:39 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/27 20:37:50 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ pthread_mutex_t			**free_forks(pthread_mutex_t **forks, size_t num);
 // timer.c
 long					us2ms(long usec);
 t_timeval				us2timeval(long usec);
-void					ft_sleep(t_config conf, long msec);
+void					ft_sleep(t_config *config, long msec);
 
 // print.c
 void					print_config(t_config *config);
