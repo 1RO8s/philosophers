@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:22:03 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/19 09:13:24 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/27 10:15:34 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,9 +75,12 @@ void					start_monitor(pthread_t *monitor_thread,
 void					update_is_anyone_dead(t_config *config, int value);
 int						read_is_anyone_dead(t_config *config);
 
+pthread_mutex_t			**free_forks(pthread_mutex_t **forks, size_t num);
+
 // timer.c
 long					us2ms(long usec);
 t_timeval				us2timeval(long usec);
+void	ft_sleep(t_config conf, long msec);
 
 // print.c
 void					print_config(t_config *config);
@@ -86,5 +89,7 @@ void					print_forks(pthread_mutex_t **forks);
 void					print_philos_forks(t_philo *data, size_t num_of_philo);
 
 void					mutex_message(t_config *config, char *message);
+
+int	mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr);
 
 #endif

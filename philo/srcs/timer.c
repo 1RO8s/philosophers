@@ -6,11 +6,12 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/18 09:01:29 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/26 19:27:12 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/27 10:16:19 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+#include <unistd.h>
 
 long	us2ms(long usec)
 {
@@ -24,4 +25,19 @@ t_timeval	us2timeval(long usec)
 	time.tv_sec = usec / 1000000;
 	time.tv_usec = usec % 1000000;
 	return (time);
+}
+
+void	ft_sleep(t_config conf, long msec)
+{
+	long	start;
+	long	current;
+
+	start = get_elapsed_usec(conf.start);
+	while (1)
+	{
+		current = get_elapsed_usec(conf.start);
+		if (current - start >= msec)
+			break ;
+		usleep(100);
+	}
 }
