@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/18 09:01:29 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/27 10:16:19 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/27 18:15:58 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,4 +40,13 @@ void	ft_sleep(t_config conf, long msec)
 			break ;
 		usleep(100);
 	}
+}
+
+long	get_elapsed_usec(t_timeval start)
+{
+	t_timeval	current;
+
+	gettimeofday(&current, NULL);
+	return ((current.tv_sec * 1000) + (current.tv_usec / 1000) - (start.tv_sec
+			* 1000) - (start.tv_usec / 1000));
 }

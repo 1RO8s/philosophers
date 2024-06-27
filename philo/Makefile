@@ -7,9 +7,10 @@ SANITIZE_ADDRESS := -fsanitize=address
 DEBUG_FLAGS := -g3
 
 NAME	:= philo
-SRCS	:= srcs/main.c srcs/print.c srcs/monitor.c srcs/timer.c
-OBJS	:= $(SRCS:.c=.o)
 SRCS_DIR	:= srcs
+SRC_FILES := main.c print.c monitor.c timer.c config.c forks.c philo.c utils.c check.c debug.c
+SRCS := $(addprefix $(SRCS_DIR)/, $(SRC_FILES))
+OBJS	:= $(SRCS:.c=.o)
 INC := -Iincludes
 
 %.o: %.c
