@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 11:13:54 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 00:44:13 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 01:02:47 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,6 @@ pthread_mutex_t	**init_forks(size_t num)
 	{
 		if (init_fork(forks, i) == NULL)
 			return (NULL);
-		printf("init_forks[%zu]: %p\n", i, (void *)forks[i]);
 		i++;
 	}
 	return (forks);

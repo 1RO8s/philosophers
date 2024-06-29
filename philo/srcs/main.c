@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/29 13:13:17 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 01:02:13 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,6 @@ void	wait_for_threads(pthread_t *pthreads, size_t num_of_philo,
 	}
 	if (pthread_join(th_monitor, NULL) != 0)
 		printf("Error: Failed to join monitor thread\n");
-	else
-		printf("All threads have been joined\n");
 }
 
 int	is_invalid_argument(int argc, char **argv)
@@ -86,6 +84,5 @@ int	main(int argc, char **argv)
 	wait_for_threads(pthreads, conf.num_of_philo, th_monitor);
 	free(pthreads);
 	free_config(&conf);
-	print_result(&conf);
 	return (0);
 }

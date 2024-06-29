@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 10:47:50 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/27 20:06:39 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 01:04:12 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,7 +98,6 @@ t_config	*init_config(int argc, char **argv, t_config *config)
 		return (NULL);
 	if (mutex_init(&config->is_anyone_dead_mutex, NULL) != 0)
 		return (NULL);
-	print_config(config);
 	forks = init_forks(config->num_of_philo);
 	config->forks = forks;
 	philos = (t_philo *)malloc(sizeof(t_philo) * config->num_of_philo);
@@ -106,7 +105,6 @@ t_config	*init_config(int argc, char **argv, t_config *config)
 		return (NULL);
 	init_philos(philos, config);
 	config->philos = philos;
-	print_philos_forks(philos, config->num_of_philo);
 	return (config);
 }
 
