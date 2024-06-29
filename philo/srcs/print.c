@@ -5,58 +5,40 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/05/14 01:26:02 by hnagasak         ###   ########.fr       */
+/*   Created: 2024/06/27 19:53:53 by hnagasak          #+#    #+#             */
+/*   Updated: 2024/06/30 01:44:48 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 #include <stdio.h>
 
-void	print_config(t_config *config)
+void	mutex_message(t_config *config, char *message)
 {
-	printf("--- print_config ---\n");
-	printf("num_of_philo: %zu\n", config->num_of_philo);
-	printf("time_to_die: %zu\n", config->time_to_die);
-	printf("time_to_eat: %zu\n", config->time_to_eat);
-	printf("time_to_sleep: %zu\n", config->time_to_sleep);
-	printf("required_eat_count: %zu\n", config->required_eat_count);
-	printf("start_time: %ld usec\n", get_elapsed_usec(config->start));
-	printf("\n");
+	pthread_mutex_lock(&config->print_mutex);
+	printf("%s", message);
+	pthread_mutex_unlock(&config->print_mutex);
 }
 
-void	print_philo(t_philo *data)
+void	mutex_print(t_philo *philo, t_status status)
 {
-	printf("%ld philos[%d] is actitvated: left->%p right->%p:\n",
-		get_elapsed_usec(data->config->start), data->id, data->left_fork,
-		data->right_fork);
-}
+	long	elapsed_msec;
+	int		philo_num;
 
-void	print_forks(pthread_mutex_t **forks)
-{
-	int	i;
-
-	printf("--- print_forks ---\n");
-	i = 0;
-	while (forks[i] != NULL && i < 10)
-	{
-		printf("forks[%d]: %p\n", i, forks[i]);
-		i++;
-	}
-	printf("\n");
-}
-
-void	print_philos_forks(t_philo *data, size_t num_of_philo)
-{
-	size_t	i;
-
-	printf("--- print_philos_forks ---\n");
-	i = 0;
-	while (i < num_of_philo)
-	{
-		printf("philo[%d]: left->%p right->%p\n", data[i].id, data[i].left_fork,
-			data[i].right_fork);
-		i++;
-	}
-	printf("\n");
+	philo_num = philo->id + 1;
+	pthread_mutex_lock(&philo->config->print_mutex);
+	elapsed_msec = get_elapsed_msec(philo->config->start);
+	if (status == DEAD)
+		printf("%ld\t%d died\n", elapsed_msec, philo_num);
+	else if (status == EATING)
+		printf("%ld\t%d is eating\n", elapsed_msec, philo_num);
+	else if (status == SLEEPING)
+		printf("%ld\t%d is sleeping\n", elapsed_msec, philo_num);
+	else if (status == THINKING)
+		printf("%ld\t%d is thinking\n", elapsed_msec, philo_num);
+	else if (status == TAKE_FORK)
+		printf("%ld\t%d has taken a fork\n", elapsed_msec, philo_num);
+	else if (status == TEST)
+		printf("%ld\t%d test\n", elapsed_msec, philo_num);
+	pthread_mutex_unlock(&philo->config->print_mutex);
 }
