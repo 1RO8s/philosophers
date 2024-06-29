@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 01:02:13 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 01:11:21 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,17 +42,17 @@ int	is_invalid_argument(int argc, char **argv)
 {
 	if (argc != 5 && argc != 6)
 	{
-		printf("Error: Wrong number of arguments\n");
+		printf("Error: number of arguments must be 4 or 5\n");
 		return (1);
 	}
-	if (atoi(argv[1]) < 1 || atoi(argv[1]) > 200)
+	if (atoi(argv[1]) < 1)
 	{
-		printf("Error: Number of philosophers must be between 1 and 200\n");
+		printf("Error: Number of philosophers must be at least 1\n");
 		return (1);
 	}
-	if (atoi(argv[2]) < 60 || atoi(argv[3]) < 60 || atoi(argv[4]) < 60)
+	if (atoi(argv[2]) < 10 || atoi(argv[3]) < 10 || atoi(argv[4]) < 10)
 	{
-		printf("Error: Time to die, eat, and sleep must be at least 60ms\n");
+		printf("Error: Time to die, eat, and sleep must be at least 10ms\n");
 		return (1);
 	}
 	if (argc == 6 && atoi(argv[5]) < 1)
