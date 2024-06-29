@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/27 20:09:34 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 01:44:21 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,14 +21,14 @@ void	print_config(t_config *config)
 	printf("time_to_eat: %zu\n", config->time_to_eat);
 	printf("time_to_sleep: %zu\n", config->time_to_sleep);
 	printf("required_eat_count: %zu\n", config->required_eat_count);
-	printf("start_time: %ld usec\n", get_elapsed_usec(config->start));
+	printf("start_time: %ld usec\n", get_elapsed_msec(config->start));
 	printf("\n");
 }
 
 void	print_philo(t_philo *data)
 {
 	printf("%ld philos[%d] is actitvated: left->%p right->%p:\n",
-		get_elapsed_usec(data->config->start), data->id, data->left_fork,
+		get_elapsed_msec(data->config->start), data->id, data->left_fork,
 		data->right_fork);
 }
 

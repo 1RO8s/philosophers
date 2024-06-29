@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 20:04:40 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 01:24:06 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 01:44:09 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ int	philo_is_dead(t_philo *philo)
 	long		from_last_eat;
 
 	last_eat_time = philo->last_eat_timeval;
-	from_last_eat = get_elapsed_usec(last_eat_time);
+	from_last_eat = get_elapsed_msec(last_eat_time);
 	time_to_die = philo->config->time_to_die;
 	if (from_last_eat > (long)time_to_die)
 	{

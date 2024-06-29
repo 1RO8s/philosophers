@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 19:53:53 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 01:40:37 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 01:44:48 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ void	mutex_print(t_philo *philo, t_status status)
 
 	philo_num = philo->id + 1;
 	pthread_mutex_lock(&philo->config->print_mutex);
-	elapsed_msec = us2ms(get_elapsed_usec(philo->config->start));
+	elapsed_msec = get_elapsed_msec(philo->config->start);
 	if (status == DEAD)
 		printf("%ld\t%d died\n", elapsed_msec, philo_num);
 	else if (status == EATING)

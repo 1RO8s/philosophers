@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:22:03 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 01:38:33 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 01:45:21 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,10 +100,9 @@ void					mutex_message(t_config *config, char *message);
 void					mutex_print(t_philo *philo, t_status status);
 
 // timer.c
-long					us2ms(long usec);
 t_timeval				us2timeval(long usec);
 void					ft_sleep(t_config *config, long msec);
-long					get_elapsed_usec(t_timeval start);
+long					get_elapsed_msec(t_timeval start);
 
 // utils
 int						mutex_init(pthread_mutex_t *mutex,
