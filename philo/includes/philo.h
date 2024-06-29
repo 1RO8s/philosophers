@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:22:03 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/27 20:37:50 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 00:45:28 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,8 +92,10 @@ void					print_take_fork(t_philo *philo, pthread_mutex_t *fork);
 
 void					mutex_message(t_config *config, char *message);
 
+// utils
 int						mutex_init(pthread_mutex_t *mutex,
 							const pthread_mutexattr_t *attr);
+void					update_last_eat_time(t_philo *philo);
 
 // config
 t_config				*init_config(int argc, char **argv, t_config *config);
@@ -104,6 +106,8 @@ pthread_mutex_t			**init_forks(size_t num);
 void					wait_for_forks(t_philo *philo);
 void					put_forks(pthread_mutex_t *fork1,
 							pthread_mutex_t *fork2);
+int						take_1st_fork(t_philo *philo, pthread_mutex_t *fork1);
+int						take_2nd_fork(t_philo *philo, pthread_mutex_t *fork2);
 
 int						should_stop(t_philo *philo);
 

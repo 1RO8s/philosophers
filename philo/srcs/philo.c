@@ -6,15 +6,46 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 18:20:34 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/27 20:38:09 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 00:46:08 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-static void	update_last_eat_time(t_philo *philo)
+void	waiting_for_forks(t_philo *philo, pthread_mutex_t *fork1,
+		pthread_mutex_t *fork2)
 {
-	gettimeofday(&philo->last_eat_timeval, NULL);
+	take_1st_fork(philo, fork1);
+	if (fork1 == fork2)
+	{
+		while (!should_stop(philo))
+			ft_sleep(philo->config, 10);
+		return ;
+	}
+	take_2nd_fork(philo, fork2);
+}
+
+void	wait_for_forks(t_philo *philo)
+{
+	t_config	*config;
+	int			total_philos;
+
+	config = philo->config;
+	total_philos = config->num_of_philo;
+	if (philo->id % 2 == 1)
+	{
+		if (get_elapsed_usec(philo->config->start) < 50)
+			ft_sleep(config, 10);
+	}
+	if (total_philos % 2 == 1 && philo->id == total_philos - 1)
+	{
+		if (get_elapsed_usec(philo->config->start) < 50)
+			ft_sleep(config, 10);
+	}
+	if (philo->id % 2 == 0)
+		waiting_for_forks(philo, philo->left_fork, philo->right_fork);
+	else
+		waiting_for_forks(philo, philo->left_fork, philo->right_fork);
 }
 
 static int	eat(t_philo *philo)

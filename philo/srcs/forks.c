@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 11:13:54 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/27 20:37:41 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 00:44:13 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,57 +54,99 @@ pthread_mutex_t	**init_forks(size_t num)
 	return (forks);
 }
 
-void	waiting_for_forks(t_philo *philo, pthread_mutex_t *fork1,
-		pthread_mutex_t *fork2)
+int	take_1st_fork(t_philo *philo, pthread_mutex_t *fork1)
 {
 	if (pthread_mutex_lock(fork1) != 0)
 	{
 		printf("Error: Failed to lock fork1[%p]\n", fork1);
-		return ;
+		return (0);
 	}
 	if (should_stop(philo))
 	{
 		pthread_mutex_unlock(fork1);
-		return ;
+		return (1);
 	}
 	mutex_print(philo, TAKE_FORK);
+	return (0);
+}
+
+int	take_2nd_fork(t_philo *philo, pthread_mutex_t *fork2)
+{
 	if (pthread_mutex_lock(fork2) != 0)
 	{
 		printf("Error: Failed to lock fork2[%p]\n", fork2);
-		pthread_mutex_unlock(fork1);
-		return ;
+		pthread_mutex_unlock(philo->left_fork);
+		return (1);
 	}
 	if (should_stop(philo))
 	{
-		pthread_mutex_unlock(fork1);
+		pthread_mutex_unlock(philo->left_fork);
 		pthread_mutex_unlock(fork2);
-		return ;
+		return (1);
 	}
 	mutex_print(philo, TAKE_FORK);
+	return (0);
 }
 
-void	wait_for_forks(t_philo *philo)
-{
-	t_config	*config;
-	int			total_philos;
+// void	waiting_for_forks(t_philo *philo, pthread_mutex_t *fork1,
+// 		pthread_mutex_t *fork2)
+// {
+// 	// if (pthread_mutex_lock(fork1) != 0)
+// 	// {
+// 	// 	printf("Error: Failed to lock fork1[%p]\n", fork1);
+// 	// 	return ;
+// 	// }
+// 	// if (should_stop(philo))
+// 	// {
+// 	// 	pthread_mutex_unlock(fork1);
+// 	// 	return ;
+// 	// }
+// 	// mutex_print(philo, TAKE_FORK);
+// 	take_1st_fork(philo, fork1);
+// 	if (fork1 == fork2)
+// 	{
+// 		while (!should_stop(philo))
+// 			ft_sleep(philo->config, 10);
+// 		return ;
+// 	}
+// 	take_2nd_fork(philo, fork2);
+// 	// if (pthread_mutex_lock(fork2) != 0)
+// 	// {
+// 	// 	printf("Error: Failed to lock fork2[%p]\n", fork2);
+// 	// 	pthread_mutex_unlock(fork1);
+// 	// 	return ;
+// 	// }
+// 	// if (should_stop(philo))
+// 	// {
+// 	// 	pthread_mutex_unlock(fork1);
+// 	// 	pthread_mutex_unlock(fork2);
+// 	// 	return ;
+// 	// }
+// 	// mutex_print(philo, TAKE_FORK);
+// }
 
-	config = philo->config;
-	total_philos = config->num_of_philo;
-	if (philo->id % 2 == 1)
-	{
-		if (get_elapsed_usec(philo->config->start) < 50)
-			ft_sleep(config, 10);
-	}
-	if (total_philos % 2 == 1 && philo->id == total_philos - 1)
-	{
-		if (get_elapsed_usec(philo->config->start) < 50)
-			ft_sleep(config, 10);
-	}
-	if (philo->id % 2 == 0)
-		waiting_for_forks(philo, philo->left_fork, philo->right_fork);
-	else
-		waiting_for_forks(philo, philo->left_fork, philo->right_fork);
-}
+// void	wait_for_forks(t_philo *philo)
+// {
+// 	t_config	*config;
+// 	int			total_philos;
+
+// 	config = philo->config;
+// 	total_philos = config->num_of_philo;
+// 	if (philo->id % 2 == 1)
+// 	{
+// 		if (get_elapsed_usec(philo->config->start) < 50)
+// 			ft_sleep(config, 10);
+// 	}
+// 	if (total_philos % 2 == 1 && philo->id == total_philos - 1)
+// 	{
+// 		if (get_elapsed_usec(philo->config->start) < 50)
+// 			ft_sleep(config, 10);
+// 	}
+// 	if (philo->id % 2 == 0)
+// 		waiting_for_forks(philo, philo->left_fork, philo->right_fork);
+// 	else
+// 		waiting_for_forks(philo, philo->left_fork, philo->right_fork);
+// }
 
 void	put_forks(pthread_mutex_t *fork1, pthread_mutex_t *fork2)
 {

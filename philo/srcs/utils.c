@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 20:00:31 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/27 20:01:41 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 00:43:01 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,4 +21,9 @@ int	mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr)
 		return (1);
 	}
 	return (0);
+}
+
+void	update_last_eat_time(t_philo *philo)
+{
+	gettimeofday(&philo->last_eat_timeval, NULL);
 }
