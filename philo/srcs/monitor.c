@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 04:18:17 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/26 19:52:17 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 01:32:11 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include <unistd.h> // for usleep
 
 // check if philos is fullfilled
-int	is_fullfilled(t_config *config, size_t fullfilled_philos)
+static int	is_fullfilled(t_config *config, size_t fullfilled_philos)
 {
 	if (fullfilled_philos == config->num_of_philo)
 	{
@@ -26,7 +26,7 @@ int	is_fullfilled(t_config *config, size_t fullfilled_philos)
 	return (0);
 }
 
-void	*monitor(void *args)
+static void	*monitor(void *args)
 {
 	t_config	*config;
 	size_t		i;

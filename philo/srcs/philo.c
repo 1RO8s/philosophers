@@ -6,13 +6,13 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 18:20:34 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 00:46:08 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 01:35:44 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	waiting_for_forks(t_philo *philo, pthread_mutex_t *fork1,
+static void	waiting_for_forks(t_philo *philo, pthread_mutex_t *fork1,
 		pthread_mutex_t *fork2)
 {
 	take_1st_fork(philo, fork1);
@@ -25,7 +25,7 @@ void	waiting_for_forks(t_philo *philo, pthread_mutex_t *fork1,
 	take_2nd_fork(philo, fork2);
 }
 
-void	wait_for_forks(t_philo *philo)
+static void	wait_for_forks(t_philo *philo)
 {
 	t_config	*config;
 	int			total_philos;
@@ -66,7 +66,7 @@ static int	eat(t_philo *philo)
 	return (0);
 }
 
-void	*handle_philo_actions(void *args)
+static void	*handle_philo_actions(void *args)
 {
 	t_philo	*philo;
 	size_t	i;

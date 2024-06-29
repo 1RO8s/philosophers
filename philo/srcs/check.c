@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 20:04:40 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/27 20:05:47 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 01:24:06 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,24 +27,6 @@ void	update_is_anyone_dead(t_config *config, int value)
 	pthread_mutex_lock(&config->is_anyone_dead_mutex);
 	config->is_anyone_dead = value;
 	pthread_mutex_unlock(&config->is_anyone_dead_mutex);
-}
-
-int	all_philos_eat_enough(t_config *config)
-{
-	size_t	i;
-	size_t	num_of_philo;
-	t_philo	*philos;
-
-	philos = config->philos;
-	num_of_philo = config->num_of_philo;
-	i = 0;
-	while (i < num_of_philo)
-	{
-		if (philos[i].eat_count < config->required_eat_count)
-			return (0);
-		i++;
-	}
-	return (1);
 }
 
 /**

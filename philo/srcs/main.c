@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 01:11:21 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 01:30:48 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-void	start_pthreads(pthread_t *pthreads, t_philo *philos,
+static void	start_pthreads(pthread_t *pthreads, t_philo *philos,
 		pthread_t *th_monitor, t_config *config)
 {
 	start_philos(pthreads, philos, config->num_of_philo);
 	start_monitor(th_monitor, config);
 }
 
-void	wait_for_threads(pthread_t *pthreads, size_t num_of_philo,
+static void	wait_for_threads(pthread_t *pthreads, size_t num_of_philo,
 		pthread_t th_monitor)
 {
 	size_t	i;
@@ -38,7 +38,7 @@ void	wait_for_threads(pthread_t *pthreads, size_t num_of_philo,
 		printf("Error: Failed to join monitor thread\n");
 }
 
-int	is_invalid_argument(int argc, char **argv)
+static int	is_invalid_argument(int argc, char **argv)
 {
 	if (argc != 5 && argc != 6)
 	{

@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 19:53:53 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 01:15:03 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 01:40:37 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,15 +40,5 @@ void	mutex_print(t_philo *philo, t_status status)
 		printf("%ld\t%d has taken a fork\n", elapsed_msec, philo_num);
 	else if (status == TEST)
 		printf("%ld\t%d test\n", elapsed_msec, philo_num);
-	pthread_mutex_unlock(&philo->config->print_mutex);
-}
-
-void	print_take_fork(t_philo *philo, pthread_mutex_t *fork)
-{
-	long	elapsed_msec;
-
-	pthread_mutex_lock(&philo->config->print_mutex);
-	elapsed_msec = us2ms(get_elapsed_usec(philo->config->start));
-	printf("%ld\t%d has taken a fork %p\n", elapsed_msec, philo->id, fork);
 	pthread_mutex_unlock(&philo->config->print_mutex);
 }

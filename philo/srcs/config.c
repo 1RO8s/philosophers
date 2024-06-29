@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 10:47:50 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 01:04:12 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 01:22:42 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,46 +25,6 @@ static void	set_args(int argc, char **argv, t_config *config)
 	else
 		config->required_eat_count = SIZE_MAX;
 }
-
-// pthread_mutex_t	*init_fork(pthread_mutex_t **forks, size_t i)
-// {
-// 	forks[i] = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
-// 	if (forks[i] == NULL)
-// 	{
-// 		printf("Error: Failed to allocate memory for mutex\n");
-// 		free_forks(forks, i);
-// 		return (NULL);
-// 	}
-// 	if (mutex_init(forks[i], NULL) != 0)
-// 	{
-// 		free(forks[i]);
-// 		free_forks(forks, i);
-// 		return (NULL);
-// 	}
-// 	return (forks[i]);
-// }
-
-// pthread_mutex_t	**init_forks(size_t num)
-// {
-// 	pthread_mutex_t	**forks;
-// 	size_t			i;
-
-// 	forks = (pthread_mutex_t **)malloc(sizeof(pthread_mutex_t *) * num);
-// 	if (forks == NULL)
-// 	{
-// 		printf("Error: Failed to allocate memory for forks array\n");
-// 		return (NULL);
-// 	}
-// 	i = 0;
-// 	while (i < num)
-// 	{
-// 		if (init_fork(forks, i) == NULL)
-// 			return (NULL);
-// 		printf("init_forks[%zu]: %p\n", i, (void *)forks[i]);
-// 		i++;
-// 	}
-// 	return (forks);
-// }
 
 static void	init_philos(t_philo *philos, t_config *config)
 {
