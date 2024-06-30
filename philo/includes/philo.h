@@ -3,15 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: hnagasak <hnagasak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:22:03 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 01:45:21 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 21:05:12 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PHILO_H
 # define PHILO_H
+
+# include <stdio.h>
 
 # include <pthread.h>
 # include <sys/time.h>
@@ -41,7 +43,9 @@ typedef struct s_philo
 	pthread_mutex_t		*left_fork;
 	pthread_mutex_t		*right_fork;
 	size_t				eat_count;
+	pthread_mutex_t		eat_count_mutex;
 	t_timeval			last_eat_timeval;
+	pthread_mutex_t		last_eat_time_mutex;
 	t_config			*config;
 }						t_philo;
 
@@ -109,4 +113,6 @@ int						mutex_init(pthread_mutex_t *mutex,
 							const pthread_mutexattr_t *attr);
 void					update_last_eat_time(t_philo *philo);
 
+void update_eat_count(t_philo *philo);
+size_t read_eat_count(t_philo *philo);
 #endif

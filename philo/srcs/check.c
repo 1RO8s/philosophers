@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   check.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: hnagasak <hnagasak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 20:04:40 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 01:44:09 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 18:42:43 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,16 @@ void	update_is_anyone_dead(t_config *config, int value)
 	pthread_mutex_unlock(&config->is_anyone_dead_mutex);
 }
 
+long	get_elapsed_last_eat(t_philo *philo)
+{
+	long	from_last_eat;
+
+	pthread_mutex_lock(&philo->last_eat_time_mutex);
+	from_last_eat = get_elapsed_msec(philo->last_eat_timeval);
+	pthread_mutex_unlock(&philo->last_eat_time_mutex);
+	return (from_last_eat);
+}
+
 /**
  * @brief Checks if a philosopher has died.
  * @param philo A pointer to the philosopher structure.
@@ -36,14 +46,10 @@ void	update_is_anyone_dead(t_config *config, int value)
  */
 int	philo_is_dead(t_philo *philo)
 {
-	t_timeval	last_eat_time;
-	size_t		time_to_die;
-	long		from_last_eat;
+	size_t		time_to_die;	
 
-	last_eat_time = philo->last_eat_timeval;
-	from_last_eat = get_elapsed_msec(last_eat_time);
 	time_to_die = philo->config->time_to_die;
-	if (from_last_eat > (long)time_to_die)
+	if (get_elapsed_last_eat(philo) > (long)time_to_die)
 	{
 		update_is_anyone_dead(philo->config, DIED);
 		mutex_print(philo, DEAD);

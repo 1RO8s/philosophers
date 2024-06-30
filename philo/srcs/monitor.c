@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   monitor.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: hnagasak <hnagasak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 04:18:17 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 01:32:11 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 21:06:09 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ static void	*monitor(void *args)
 		{
 			if (philo_is_dead(&philos[i]))
 				return (NULL);
-			if (philos[i].eat_count >= config->required_eat_count)
+			if ( read_eat_count(&philos[i]) >= config->required_eat_count)
 				fullfilled_philos++;
 			i++;
 		}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: hnagasak <hnagasak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 18:20:34 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 01:44:28 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/06/30 21:02:37 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,19 +50,35 @@ static void	wait_for_forks(t_philo *philo)
 
 static int	eat(t_philo *philo)
 {
+	printf("1\n");
 	wait_for_forks(philo);
+	printf("2\n");
 	if (should_stop(philo))
 	{
 		put_forks(philo->right_fork, philo->left_fork);
 		return (1);
 	}
+	printf("3\n");
+
 	mutex_print(philo, EATING);
+		printf("4\n");
+
 	update_last_eat_time(philo);
+	printf("9\n");
+
 	ft_sleep(philo->config, philo->config->time_to_eat);
+	printf("10\n");
 	put_forks(philo->right_fork, philo->left_fork);
+	printf("11\n");
+
 	if (should_stop(philo))
 		return (1);
-	philo->eat_count++;
+		printf("12\n");
+
+	// philo->eat_count++;
+	update_eat_count(philo);
+		printf("13\n");
+
 	return (0);
 }
 
