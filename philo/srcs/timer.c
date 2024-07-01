@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   timer.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hnagasak <hnagasak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/18 09:01:29 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 20:27:25 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/07/01 21:22:04 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,18 +29,13 @@ t_timeval	us2timeval(long usec)
 
 void	ft_sleep(t_config *config, long msec)
 {
-	t_timeval	tmp = config->start;
 	long	start;
 	long	current;
 
-	// start = get_elapsed_msec(config->start);
-	start = get_elapsed_msec(tmp);
-
+	start = get_elapsed_msec(config->start);
 	while (1)
 	{
-		// current = get_elapsed_msec(config->start);
-		current = get_elapsed_msec(tmp);
-
+		current = get_elapsed_msec(config->start);
 		if (current - start >= msec)
 			break ;
 		usleep(100);

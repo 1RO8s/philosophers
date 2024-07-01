@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   config.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hnagasak <hnagasak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 10:47:50 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 21:13:47 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/07/01 21:23:10 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,8 @@ static void	init_philos(t_philo *philos, t_config *config)
 		philos[i].eat_count = 0;
 		philos[i].last_eat_timeval = config->start;
 		philos[i].config = config;
-		mutex_init(&philos[i].eat_count_mutex,NULL);
-		mutex_init(&philos[i].last_eat_time_mutex,NULL);
+		mutex_init(&philos[i].eat_count_mutex, NULL);
+		mutex_init(&philos[i].last_eat_time_mutex, NULL);
 		i++;
 	}
 }
