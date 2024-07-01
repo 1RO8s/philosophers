@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:22:03 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/07/01 21:28:41 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/07/01 21:51:47 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,8 +87,7 @@ void					print_result(t_config *config);
 pthread_mutex_t			**init_forks(size_t num);
 int						take_1st_fork(t_philo *philo, pthread_mutex_t *fork1);
 int						take_2nd_fork(t_philo *philo, pthread_mutex_t *fork2);
-void					put_forks(pthread_mutex_t *fork1,
-							pthread_mutex_t *fork2);
+void					put_forks(t_philo *philo);
 
 // monitor.c
 void					start_monitor(pthread_t *monitor_thread,

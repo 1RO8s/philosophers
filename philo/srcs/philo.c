@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: hnagasak <hnagasak@student.42.fr>          +#+  +:+       +#+        */
+/*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 18:20:34 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 21:02:37 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/07/01 22:14:53 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ static void	waiting_for_forks(t_philo *philo, pthread_mutex_t *fork1,
 	if (fork1 == fork2)
 	{
 		while (!should_stop(philo))
-			ft_sleep(philo->config, 10);
+			ft_sleep(philo->config, 5);
 		return ;
 	}
 	take_2nd_fork(philo, fork2);
@@ -32,18 +32,16 @@ static void	wait_for_forks(t_philo *philo)
 
 	config = philo->config;
 	total_philos = config->num_of_philo;
-	if (philo->id % 2 == 1)
+
+	if (get_elapsed_msec(philo->config->start) < 50)
 	{
-		if (get_elapsed_msec(philo->config->start) < 50)
+		if (philo->id % 2 == 1)
 			ft_sleep(config, 10);
-	}
-	if (total_philos % 2 == 1 && philo->id == total_philos - 1)
-	{
-		if (get_elapsed_msec(philo->config->start) < 50)
+		else if(total_philos % 2 == 1 && philo->id == total_philos - 1)
 			ft_sleep(config, 10);
 	}
 	if (philo->id % 2 == 0)
-		waiting_for_forks(philo, philo->left_fork, philo->right_fork);
+		waiting_for_forks(philo, philo->right_fork, philo->left_fork);
 	else
 		waiting_for_forks(philo, philo->left_fork, philo->right_fork);
 }
@@ -53,13 +51,13 @@ static int	eat(t_philo *philo)
 	wait_for_forks(philo);
 	if (should_stop(philo))
 	{
-		put_forks(philo->right_fork, philo->left_fork);
+		put_forks(philo);
 		return (1);
 	}
 	mutex_print(philo, EATING);
 	update_last_eat_time(philo);
 	ft_sleep(philo->config, philo->config->time_to_eat);
-	put_forks(philo->right_fork, philo->left_fork);
+	put_forks(philo);
 	if (should_stop(philo))
 		return (1);
 	update_eat_count(philo);
