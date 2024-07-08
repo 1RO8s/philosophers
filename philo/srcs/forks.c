@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 11:13:54 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/07/01 21:51:32 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/07/01 22:57:49 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,11 +92,15 @@ void	put_forks(t_philo *philo)
 	if(philo->id % 2 == 0)
 	{
 		pthread_mutex_unlock(philo->left_fork);
+		mutex_print(philo, PUT_FORK);
 		pthread_mutex_unlock(philo->right_fork);
+		mutex_print(philo, PUT_FORK);
 	}
 	else
 	{
 		pthread_mutex_unlock(philo->right_fork);
+		mutex_print(philo, PUT_FORK);
 		pthread_mutex_unlock(philo->left_fork);
+		mutex_print(philo, PUT_FORK);
 	}
 }

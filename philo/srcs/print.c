@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 19:53:53 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/06/30 01:44:48 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/07/01 23:01:35 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@ void	mutex_print(t_philo *philo, t_status status)
 		printf("%ld\t%d is thinking\n", elapsed_msec, philo_num);
 	else if (status == TAKE_FORK)
 		printf("%ld\t%d has taken a fork\n", elapsed_msec, philo_num);
+	else if (status == PUT_FORK)
+		printf("%ld\t%d has put a fork\n", elapsed_msec, philo_num);
 	else if (status == TEST)
 		printf("%ld\t%d test\n", elapsed_msec, philo_num);
 	pthread_mutex_unlock(&philo->config->print_mutex);

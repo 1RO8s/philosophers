@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:22:03 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/07/01 21:51:47 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/07/01 22:56:59 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ typedef enum e_status
 	SLEEPING,
 	THINKING,
 	TAKE_FORK,
+	PUT_FORK,
 	TEST
 }						t_status;
 
