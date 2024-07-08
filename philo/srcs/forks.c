@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 11:13:54 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/07/08 16:53:40 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/07/08 16:55:12 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ int	take_2nd_fork(t_philo *philo, pthread_mutex_t *fork2)
 
 void	put_forks(t_philo *philo)
 {
-	if(philo->id % 2 == 0)
+	if (philo->id % 2 == 0)
 	{
 		pthread_mutex_unlock(philo->left_fork);
 		pthread_mutex_unlock(philo->right_fork);
