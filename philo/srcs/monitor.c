@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/13 04:18:17 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/07/01 21:22:35 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/07/01 22:28:49 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ static void	*monitor(void *args)
 		}
 		if (is_fullfilled(config, fullfilled_philos))
 			return (NULL);
+		ft_sleep(config, 5);
 	}
 	return (NULL);
 }
