@@ -8,7 +8,7 @@ DEBUG_FLAGS := -g3
 
 NAME	:= philo
 SRCS_DIR	:= srcs
-SRC_FILES := main.c print.c monitor.c timer.c config.c forks.c philo.c utils.c check.c debug.c
+SRC_FILES := main.c print.c monitor.c timer.c config.c forks.c philo.c utils.c check.c debug.c atoi.c
 SRCS := $(addprefix $(SRCS_DIR)/, $(SRC_FILES))
 OBJS	:= $(SRCS:.c=.o)
 INC := -Iincludes

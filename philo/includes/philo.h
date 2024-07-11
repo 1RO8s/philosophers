@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:22:03 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/07/01 22:56:59 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/07/12 02:15:15 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,5 +113,7 @@ int						mutex_init(pthread_mutex_t *mutex,
 void					update_last_eat_time(t_philo *philo);
 void					update_eat_count(t_philo *philo);
 size_t					read_eat_count(t_philo *philo);
+
+int						ft_atoi(const char *str);
 
 #endif
