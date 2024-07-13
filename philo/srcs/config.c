@@ -6,12 +6,13 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 10:47:50 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/07/01 21:23:10 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/07/13 18:41:01 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-#include <stdio.h> // for printf
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 static void	set_args(int argc, char **argv, t_config *config)
