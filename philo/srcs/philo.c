@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "philo.h"
+#include <stdlib.h>
 
 static void	waiting_for_forks(t_philo *philo, pthread_mutex_t *fork1,
 		pthread_mutex_t *fork2)
@@ -61,7 +62,7 @@ static int	eat(t_philo *philo)
 	return (0);
 }
 
-static void	*handle_philo_actions(void *args)
+static void	*philo_actions(void *args)
 {
 	t_philo	*philo;
 	size_t	i;
@@ -92,9 +93,21 @@ void	start_philos(pthread_t *pthreads, t_philo *data, size_t num_of_philo)
 	i = 0;
 	while (i < num_of_philo)
 	{
-		if (pthread_create(&pthreads[i], NULL, &handle_philo_actions,
-				&data[i]) != 0)
+		if (pthread_create(&pthreads[i], NULL, &philo_actions, &data[i]) != 0)
+		{
 			mutex_message(data[0].config, "Failed to create thread\n");
+			break ;
+		}
 		i++;
+	}
+	if (i < num_of_philo)
+	{
+		while (i > 0)
+		{
+			if (pthread_join(pthreads[--i], NULL) != 0)
+				mutex_message(data[0].config, "Error: Failed to join thread\n");
+		}
+		free(pthreads);
+		free(data);
 	}
 }
