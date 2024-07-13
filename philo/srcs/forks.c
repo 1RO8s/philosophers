@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 11:13:54 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/07/08 16:55:12 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/07/13 10:53:58 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ void	put_forks(t_philo *philo)
 	}
 	else
 	{
-		pthread_mutex_unlock(philo->right_fork);
 		pthread_mutex_unlock(philo->left_fork);
+		pthread_mutex_unlock(philo->right_fork);
 	}
 }

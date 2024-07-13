@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/27 18:20:34 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/07/08 16:54:57 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/07/13 10:53:49 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,21 +28,19 @@ static void	waiting_for_forks(t_philo *philo, pthread_mutex_t *fork1,
 static void	wait_for_forks(t_philo *philo)
 {
 	t_config	*config;
-	int			total_philos;
 
 	config = philo->config;
-	total_philos = config->num_of_philo;
 	if (get_elapsed_msec(philo->config->start) < 50)
 	{
 		if (philo->id % 2 == 1)
-			ft_sleep(config, 10);
-		else if (total_philos % 2 == 1 && philo->id == total_philos - 1)
 			ft_sleep(config, 10);
 	}
 	if (philo->id % 2 == 0)
 		waiting_for_forks(philo, philo->right_fork, philo->left_fork);
 	else
-		waiting_for_forks(philo, philo->left_fork, philo->right_fork);
+	{
+		waiting_for_forks(philo, philo->right_fork, philo->left_fork);
+	}
 }
 
 static int	eat(t_philo *philo)
