@@ -6,7 +6,7 @@
 /*   By: hnagasak <hnagasak@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 23:21:22 by hnagasak          #+#    #+#             */
-/*   Updated: 2024/07/12 02:25:35 by hnagasak         ###   ########.fr       */
+/*   Updated: 2024/07/13 19:15:51 by hnagasak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,6 @@ int	has_none_numeric_args(int argc, char **argv)
 				return (1);
 			str++;
 		}
-		printf("argv[%d] %d\n", i, ft_atoi(argv[i]));
 		if (ft_atoi(argv[i]) < 0)
 		{
 			printf("Error: non-numeric %d\n", ft_atoi(argv[i]));
